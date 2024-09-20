@@ -11,10 +11,10 @@ class User:
 
     def login(self, data):
 
-        email = data["email"]
+        document = data["document"]
         password = data["password"]
 
-        data_user = self.querys.get_user(email)
+        data_user = self.querys.get_user(document)
 
         enc_passwd = data_user.password
         if not check_password_hash(enc_passwd, password):

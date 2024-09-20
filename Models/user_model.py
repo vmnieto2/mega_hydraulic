@@ -7,6 +7,8 @@ class UserModel(BASE):
     __tablename__= "user"
     
     id = Column(BigInteger, primary_key=True)
+    type_document = Column(Integer, nullable=False)
+    document = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     second_name = Column(String, nullable=True)
     last_name = Column(String, nullable=False)

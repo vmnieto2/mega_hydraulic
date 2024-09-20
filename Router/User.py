@@ -7,7 +7,7 @@ from Schemas.user import User as UserSchema
 tools = Tools()
 user_router = APIRouter()
 
-@user_router.post('/login', tags=["Auth"], response_model=dict,)
+@user_router.post('/login', tags=["Auth"], response_model=dict)
 @http_decorator
 def login(request: Request, user: UserSchema):
     data = getattr(request.state, "json_data", {})

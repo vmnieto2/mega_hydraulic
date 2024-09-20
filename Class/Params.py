@@ -16,3 +16,8 @@ class Param:
 
         type_users = self.querys.get_type_user()
         return self.tools.output(200, "Ok.", type_users)
+
+    def get_type_maintenance(self):
+
+        type_maintenance = self.querys.get_type_maintenance()
+        return self.tools.output(200, "Ok.", type_maintenance)

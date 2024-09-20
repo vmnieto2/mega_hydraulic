@@ -10,6 +10,7 @@ from email import encoders
 import json
 import os
 import smtplib
+from datetime import datetime
 
 
 class Tools:
@@ -53,6 +54,12 @@ class Tools:
                 "Exception": error
             }
         }
+    
+    def format_date(self, date):
+        fecha_objeto = datetime.strptime(date, "%d-%m-%Y")
+        fecha_formateada = fecha_objeto.strftime("%Y-%m-%d")
+        return fecha_formateada
+
     # """ Obtener archivo"""
     # def get_file_b64(self, file_path):
     #     with open(file_path, "rb") as file:

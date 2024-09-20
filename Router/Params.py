@@ -18,3 +18,9 @@ def get_type_document(request: Request):
 def get_type_user(request: Request):
     response = Param().get_type_user()
     return response
+
+@param_router.post('/params/get_type_maintenance', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_type_maintenance(request: Request):
+    response = Param().get_type_maintenance()
+    return response
