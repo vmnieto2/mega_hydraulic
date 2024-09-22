@@ -15,9 +15,9 @@ def create_report(request: Request, report: ReportSchema):
     response = Report().create_report(data)
     return response
 
-@report_router.post('/reports/test_upload', tags=["Reports"], response_model=dict)
+@report_router.post('/reports/generate_report', tags=["Reports"], response_model=dict)
 @http_decorator
-def test_upload(request: Request):
+def generate_report(request: Request):
     data = getattr(request.state, "json_data", {})
-    response = Report().test_upload(data)
+    response = Report().generate_report(data)
     return response

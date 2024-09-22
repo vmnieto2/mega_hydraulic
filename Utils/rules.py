@@ -12,6 +12,7 @@ class Rules:
             "/login": self.__val_login,
             "/reports/create_report": self.__val_create_report,
             "/maintenance_types": self.__val_maintenance_types,
+            "/reports/generate_report": self.__val_generate_report,
         }
         # Se obtiene la funcion a ejecutar
         func = path_dict.get(path, None)
@@ -112,13 +113,25 @@ class Rules:
         ]
         return validacion_dict
 
-    # Validate data for typoes of maintenance
+    # Validate data for types of maintenance
     def __val_maintenance_types(self, params):
         validacion_dict = [
             {
                 "tipo": "int",
                 "campo": "tipo mantenimiento",
                 "valor": params,
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for generate report
+    def __val_generate_report(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "reporte id",
+                "valor": params["report_id"],
                 "obligatorio": True,
             }
         ]

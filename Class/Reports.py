@@ -3,12 +3,13 @@ from Utils.querys import Querys
 from Models.type_maintenance_model import TypeMaintenanceModel
 from Models.report_files_model import ReportFilesModel
 from Utils.rules import Rules
+from datetime import datetime
 import os
 import base64
 import uuid
 import re
 
-UPLOAD_FOLDER = "uploads/"
+UPLOAD_FOLDER = "Uploads/"
 
 class Report:
 
@@ -34,12 +35,12 @@ class Report:
             imagenes = data["files"]
 
             if maintenance_types:
-                for type_m in maintenance_types:
+                for index, type_m in enumerate(maintenance_types):
                     Rules("/maintenance_types", type_m)
                     self.querys.check_param_exists(
                         TypeMaintenanceModel, 
                         type_m, 
-                        "Tipo mantenimiento"
+                        f"Tipo mantenimiento {index+1}"
                     )
 
             id_report = self.querys.create_report(data_save)
@@ -59,6 +60,7 @@ class Report:
         except Exception as ex:
             raise CustomException(str(ex))
 
+    # Function for process image files base64 and save them
     def proccess_images(self, id_report, imagenes):
 
         # Procesar y guardar cada archivo de la lista "files"
@@ -102,3 +104,18 @@ class Report:
         
         # Extrae la extensión (jpg, png, etc.)
         return match.group("ext")
+
+    # Function for generate pdf of the report
+    def generate_report(self, data):
+
+        report_id = data["report_id"]
+
+        data_report = self.querys.get_data_report(report_id)
+
+        pdf = self.tools.gen_pdf(data_report)
+
+        # Nombre del archivo pdf de salida
+        file_name = f"reporte_{data['report_id']}_{str(datetime.now())}.pdf"
+
+        # return self.tools.output(200, "Ok", data_report)
+        return self.tools.outputpdf(200, file_name, pdf)
