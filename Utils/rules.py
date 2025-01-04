@@ -12,6 +12,11 @@ class Rules:
             "/login": self.__val_login,
             "/reports/create_report": self.__val_create_report,
             "/maintenance_types": self.__val_maintenance_types,
+            "/service_types": self.__val_service_types,
+            "/task_list": self.__val_task_list,
+            "/params/get_tasks_by_equipment": self.__val_get_tasks_by_equipment,
+            "/params/get_lines_by_client": self.__val_get_lines_by_client,
+            "/params/get_users_by_client": self.__val_get_users_by_client,
             "/reports/generate_report": self.__val_generate_report,
         }
         # Se obtiene la funcion a ejecutar
@@ -45,58 +50,64 @@ class Rules:
     def __val_create_report(self, params):
         validacion_dict = [
             {
-                "tipo": "string",
-                "campo": "equipo intervenido",
-                "valor": params["intervened_item"],
-                "obligatorio": True,
-            },
-            {
                 "tipo": "date",
                 "campo": "fecha actividad",
                 "valor": params["activity_date"],
                 "obligatorio": True,
             },
             {
-                "tipo": "string",
+                "tipo": "int",
                 "campo": "cliente",
-                "valor": params["client"],
+                "valor": params["client_id"],
                 "obligatorio": True,
             },
             {
-                "tipo": "string",
-                "campo": "orden servicio",
-                "valor": params["service_order"],
-                "obligatorio": False,
-            },
-            {
-                "tipo": "string",
-                "campo": "solicitud pedido",
-                "valor": params["solped"],
+                "tipo": "int",
+                "campo": "línea del cliente",
+                "valor": params["client_line_id"],
                 "obligatorio": True,
             },
             {
-                "tipo": "string",
+                "tipo": "int",
                 "campo": "persona que recibe",
                 "valor": params["person_receives"],
                 "obligatorio": True,
             },
             {
                 "tipo": "string",
-                "campo": "orden de compra",
-                "valor": params["buy_order"],
+                "campo": "orden de mantenimiento",
+                "valor": params["om"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "list",
+                "campo": "tipos de servicio",
+                "valor": params["type_service"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "int",
+                "campo": "tipo de equipo",
+                "valor": params["equipment_type_id"],
                 "obligatorio": True,
             },
             {
                 "tipo": "string",
-                "campo": "descripción",
-                "valor": params["description"],
+                "campo": "nombre de equipo",
+                "valor": params["equipment_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "descripción del servicio",
+                "valor": params["service_description"],
                 "obligatorio": True,
             },
             {
                 "tipo": "list",
-                "campo": "tipos de mantenimiento",
-                "valor": params["maintenance_types"],
-                "obligatorio": False,
+                "campo": "lista de tareas",
+                "valor": params["task_list"],
+                "obligatorio": True,
             },
             {
                 "tipo": "int",
@@ -104,12 +115,12 @@ class Rules:
                 "valor": params["user_id"],
                 "obligatorio": True,
             },
-            {
-                "tipo": "list",
-                "campo": "archivos",
-                "valor": params["files"],
-                "obligatorio": False,
-            }
+            # {
+            #     "tipo": "list",
+            #     "campo": "archivos",
+            #     "valor": params["files"],
+            #     "obligatorio": False,
+            # }
         ]
         return validacion_dict
 
@@ -120,6 +131,84 @@ class Rules:
                 "tipo": "int",
                 "campo": "tipo mantenimiento",
                 "valor": params,
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for types of services
+    def __val_service_types(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "tipo servicio",
+                "valor": params,
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for tasks list
+    def __val_task_list(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "tarea id",
+                "valor": params["task_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "positivo",
+                "valor": params["positive"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "int",
+                "campo": "negativo",
+                "valor": params["negative"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "string",
+                "campo": "descripción de la lista de tarea",
+                "valor": params["description"],
+                "obligatorio": False,
+            },
+        ]
+        return validacion_dict
+
+    # Validate data for tasks by equipment
+    def __val_get_tasks_by_equipment(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "tipo de equipo",
+                "valor": params["equipment"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for lines by client
+    def __val_get_lines_by_client(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "cliente",
+                "valor": params["client"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for users by client
+    def __val_get_users_by_client(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "cliente",
+                "valor": params["client"],
                 "obligatorio": True,
             }
         ]

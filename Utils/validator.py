@@ -15,7 +15,7 @@ class Validator:
         if "tipo_documento" in params:
             type_document = int(params["tipo_documento"])
 
-        if (valor == "" or valor is None) and bool(obligatorio):
+        if (valor == "" or valor is None or valor == []) and bool(obligatorio):
             message = f"El campo {campo} no puede ser vacio."
             raise CustomException(message)
         try:

@@ -1,6 +1,11 @@
 from Utils.tools import Tools, CustomException
 from Utils.querys import Querys
-from Models.type_maintenance_model import TypeMaintenanceModel
+from Models.client_model import ClientModel
+from Models.client_lines_model import ClientLinesModel
+from Models.client_user_model import ClientUserModel
+from Models.type_service_model import TypeServiceModel
+from Models.type_equipment_model import TypeEquipmentModel
+from Models.task_list_model import TaskListModel
 from Models.report_files_model import ReportFilesModel
 from Utils.rules import Rules
 from datetime import datetime
@@ -21,41 +26,77 @@ class Report:
 
         try:
             data_save = {
-                "intervened_item": data["intervened_item"],
                 "activity_date": self.tools.format_date(data["activity_date"]),
-                "client": data["client"],
-                "service_order": data["service_order"],
-                "solped": data["solped"],
+                "client_id": data["client_id"],
+                "client_line_id": data["client_line_id"],
                 "person_receives": data["person_receives"],
-                "buy_order": data["buy_order"],
-                "description": data["description"],
+                "om": data["om"],
+                "equipment_type_id": data["equipment_type_id"],
+                "equipment_name": data["equipment_name"],
+                "service_description": data["service_description"],
                 "user_id": data["user_id"]
             }
-            maintenance_types = data["maintenance_types"]
-            imagenes = data["files"]
 
-            if maintenance_types:
-                for index, type_m in enumerate(maintenance_types):
-                    Rules("/maintenance_types", type_m)
+            self.querys.check_param_exists(
+                ClientModel, 
+                data["client_id"], 
+                "Cliente"
+            )
+
+            self.querys.check_param_exists(
+                ClientLinesModel, 
+                data["client_line_id"], 
+                "Línea"
+            )
+
+            self.querys.check_param_exists(
+                ClientUserModel, 
+                data["person_receives"], 
+                "Persona que recibe"
+            )
+
+            self.querys.check_param_exists(
+                TypeEquipmentModel, 
+                data["equipment_type_id"], 
+                "Tipo de equipo intervenido"
+            )
+
+            type_service = data["type_service"]
+            if type_service:
+                for index, type_s in enumerate(type_service):
+                    Rules("/service_types", type_s)
                     self.querys.check_param_exists(
-                        TypeMaintenanceModel, 
-                        type_m, 
+                        TypeServiceModel, 
+                        type_s,
                         f"Tipo mantenimiento {index+1}"
                     )
 
+            task_list = data["task_list"]
+            if task_list:
+                for index, task in enumerate(task_list):
+                    Rules("/task_list", task)
+                    self.querys.check_param_exists(
+                        TaskListModel, 
+                        task["task_id"],
+                        f"Tarea {index+1}"
+                    )
+
             id_report = self.querys.create_report(data_save)
-            if maintenance_types:
-                for type_m in maintenance_types:
-                    data_type_save = {
-                        "id_report": id_report,
-                        "type_maintenance_id": type_m
+            if task_list:
+                for task in task_list:
+                    data_report_details_save = {
+                        "report_id": id_report,
+                        "task_id": task["task_id"],
+                        "positive": task["positive"],
+                        "negative": task["negative"],
+                        "description": task["description"]
                     }
-                    self.querys.insert_types_maintenances(data_type_save)
+                    self.querys.insert_report_details(data_report_details_save)
 
-            if imagenes:
-                self.proccess_images(id_report, imagenes)
+            # if imagenes:
+            #     self.proccess_images(id_report, imagenes)
 
-            return self.tools.output(200, "Report created successfully.")
+            return self.tools.output(200, "Report created successfully.", id_report)
 
         except Exception as ex:
             raise CustomException(str(ex))

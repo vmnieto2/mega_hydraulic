@@ -1,14 +1,15 @@
 from pydantic import BaseModel
 
 class Report(BaseModel):
-    intervened_item: str
     activity_date: str
-    client: str
-    service_order: str
-    solped: str
-    person_receives: str
-    buy_order: str
-    description: str
-    maintenance_types: list
-    files: list
+    client_id: int
+    client_line_id: int
+    person_receives: int
+    om: str
+    equipment_type_id: int
+    equipment_name: str
+    service_description: str
+    type_service: list
+    task_list: list
+    # files: list
     user_id: int

@@ -5,10 +5,16 @@ from Models.user_model import UserModel
 from Models.type_document_model import TypeDocumentModel
 from Models.user_type_model import TypeUserModel
 from Models.type_maintenance_model import TypeMaintenanceModel
+from Models.type_service_model import TypeServiceModel
+from Models.type_equipment_model import TypeEquipmentModel
+from Models.task_list_model import TaskListModel
+from Models.task_list_by_equipment_model import TaskListEquipmentModel
+from Models.client_model import ClientModel
+from Models.client_lines_model import ClientLinesModel
+from Models.client_user_model import ClientUserModel
 from Models.report_model import ReportModel
-from Models.report_type_maintenance_model import ReportTypeMaintenanceModel
+from Models.report_details_model import ReportDetailsModel
 from Models.report_files_model import ReportFilesModel
-# from Models.payment_model import PaymentModel
 
 class Querys:
 
@@ -100,6 +106,144 @@ class Querys:
         
         return response
 
+    # Query for have all type services
+    def get_type_service(self):
+
+        response = list()
+                
+        query = session.query(
+            TypeServiceModel
+        ).filter(
+            TypeServiceModel.status == 1
+        ).all()
+        session.close()
+        
+        if not query:
+            raise CustomException("No data to show", 404)
+        
+        for key in query:
+            response.append({
+                "id": key.id,
+                "name": key.name
+            })
+        
+        return response
+
+    # Query for have all type equipments
+    def get_type_equipments(self):
+
+        response = list()
+                
+        query = session.query(
+            TypeEquipmentModel
+        ).filter(
+            TypeEquipmentModel.status == 1
+        ).all()
+        session.close()
+        
+        if not query:
+            raise CustomException("No data to show", 404)
+        
+        for key in query:
+            response.append({
+                "id": key.id,
+                "name": key.name
+            })
+        
+        return response
+
+    # Query for have all task by equipment
+    def get_tasks_by_equipment(self, equipment: int):
+
+        response = list()
+                
+        with session:
+            query = session.query(
+                TaskListModel.id, TaskListModel.name
+            ).join(
+                TaskListEquipmentModel, 
+                TaskListModel.id == TaskListEquipmentModel.task_id,
+                isouter=True
+            ).join(
+                TypeEquipmentModel, 
+                TypeEquipmentModel.id == TaskListEquipmentModel.equipment_id,
+                isouter=True
+            ).filter(
+                TypeEquipmentModel.status == 1,
+                TaskListModel.status == 1,
+                TaskListEquipmentModel.status == 1,
+                TaskListEquipmentModel.equipment_id == equipment
+            ).all()
+        
+        if not query:
+            raise CustomException("No data to show", 404)
+        
+        for key in query:
+            response.append({
+                "id": key.id,
+                "name": key.name
+            })
+        
+        return response
+
+    # Query for have all lines by client
+    def get_lines_by_client(self, client: int):
+
+        response = list()
+                
+        with session:
+            query = session.query(
+                ClientLinesModel.id, ClientLinesModel.name
+            ).join(
+                ClientModel, 
+                ClientModel.id == ClientLinesModel.client_id,
+                isouter=True
+            ).filter(
+                ClientModel.status == 1,
+                ClientLinesModel.status == 1,
+                ClientLinesModel.client_id == client
+            ).all()
+        
+        if not query:
+            raise CustomException("No data to show", 404)
+        
+        for key in query:
+            response.append({
+                "id": key.id,
+                "name": key.name
+            })
+        
+        return response
+
+    # Query for have all users by client
+    def get_users_by_client(self, client: int):
+
+        response = list()
+                
+        with session:
+            query = session.query(
+                ClientUserModel.id, ClientUserModel.full_name
+            ).join(
+                ClientModel, 
+                ClientModel.id == ClientUserModel.client_id,
+                isouter=True
+            ).filter(
+                ClientModel.status == 1,
+                ClientUserModel.status == 1,
+                ClientUserModel.client_id == client
+            ).all()
+        
+        if not query:
+            raise CustomException("No data to show", 404)
+        
+        for key in query:
+            response.append({
+                "id": key.id,
+                "name": key.full_name
+            })
+        
+        return response
+
     # Function to verify if exists a field of any list of params
     def check_param_exists(self, model: any, param_to_find: int, field: str):
 
@@ -132,10 +276,10 @@ class Querys:
         return report_id
     
     # Query for types maintenances.
-    def insert_types_maintenances(self, data: dict):
+    def insert_report_details(self, data: dict):
         try:
-            type_man = ReportTypeMaintenanceModel(data)
-            session.add(type_man)
+            details = ReportDetailsModel(data)
+            session.add(details)
             session.commit()
             session.close()
         except Exception as ex:

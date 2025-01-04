@@ -24,3 +24,36 @@ def get_type_user(request: Request):
 def get_type_maintenance(request: Request):
     response = Param().get_type_maintenance()
     return response
+
+@param_router.post('/params/get_type_service', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_type_service(request: Request):
+    response = Param().get_type_service()
+    return response
+
+@param_router.post('/params/get_type_equipments', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_type_equipments(request: Request):
+    response = Param().get_type_equipments()
+    return response
+
+@param_router.post('/params/get_tasks_by_equipment', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_tasks_by_equipment(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Param().get_tasks_by_equipment(data)
+    return response
+
+@param_router.post('/params/get_lines_by_client', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_lines_by_client(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Param().get_lines_by_client(data)
+    return response
+
+@param_router.post('/params/get_users_by_client', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_users_by_client(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Param().get_users_by_client(data)
+    return response
