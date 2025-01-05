@@ -6,6 +6,7 @@ from Models.client_user_model import ClientUserModel
 from Models.type_service_model import TypeServiceModel
 from Models.type_equipment_model import TypeEquipmentModel
 from Models.task_list_model import TaskListModel
+from Models.report_type_service_model import ReportTypeServiceModel
 from Models.report_files_model import ReportFilesModel
 from Utils.rules import Rules
 from datetime import datetime
@@ -82,6 +83,19 @@ class Report:
                     )
 
             id_report = self.querys.create_report(data_save)
+
+            if type_service:
+                for type_s in type_service:
+                    data_type_service = {
+                        "report_id": id_report,
+                        "type_service_id": type_s,
+                    }
+                    self.querys.insert_data(
+                        ReportTypeServiceModel, 
+                        data_type_service
+                    )
+
+
             if task_list:
                 for task in task_list:
                     data_report_details_save = {
@@ -93,8 +107,9 @@ class Report:
                     }
                     self.querys.insert_report_details(data_report_details_save)
 
-            # if imagenes:
-            #     self.proccess_images(id_report, imagenes)
+            imagenes = data["files"]
+            if imagenes:
+                self.proccess_images(id_report, imagenes)
 
             return self.tools.output(200, "Report created successfully.", id_report)
 

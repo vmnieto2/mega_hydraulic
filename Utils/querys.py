@@ -4,7 +4,7 @@ from Utils.tools import Tools, CustomException
 from Models.user_model import UserModel
 from Models.type_document_model import TypeDocumentModel
 from Models.user_type_model import TypeUserModel
-from Models.type_maintenance_model import TypeMaintenanceModel
+from Models.report_type_service_model import ReportTypeServiceModel
 from Models.type_service_model import TypeServiceModel
 from Models.type_equipment_model import TypeEquipmentModel
 from Models.task_list_model import TaskListModel
@@ -309,53 +309,86 @@ class Querys:
             response = dict()
                     
             query = session.query(
-                ReportModel.id,
-                ReportModel.intervened_item, ReportModel.activity_date,
-                ReportModel.client, ReportModel.service_order,
-                ReportModel.solped, ReportModel.person_receives,
-                ReportModel.buy_order, ReportModel.description           
+                ReportModel.id, 
+                ReportModel.activity_date,
+                ReportModel.client_id,
+                ClientModel.name.label('client_name'),
+                ReportModel.client_line_id,
+                ClientLinesModel.name.label('client_line'),
+                ReportModel.person_receives.label('person_receive_id'),
+                ClientUserModel.full_name.label('person_receive_name'),
+                ReportModel.om,
+                ReportModel.equipment_type_id,
+                TypeEquipmentModel.name.label('equipment_name'),
+                ReportModel.equipment_name,
+                ReportModel.service_description,
+            ).join(
+                ClientModel, 
+                ClientModel.id == ReportModel.client_id,
+                isouter=True
+            ).join(
+                ClientLinesModel, 
+                ClientLinesModel.id == ReportModel.client_line_id,
+                isouter=True
+            ).join(
+                ClientUserModel, 
+                ClientUserModel.id == ReportModel.person_receives,
+                isouter=True
+            ).join(
+                TypeEquipmentModel, 
+                TypeEquipmentModel.id == ReportModel.equipment_type_id,
+                isouter=True
             ).filter(
-                ReportModel.id == report_id, ReportModel.status == 1
+                ClientModel.status == 1,
+                ClientLinesModel.status == 1,
+                ClientUserModel.status == 1,
+                TypeEquipmentModel.status == 1,
+                ReportModel.id == report_id,
+                ReportModel.status == 1
             ).first()
             
             if query:
                 response = {
                     "id": query.id,
-                    "intervened_item": query.intervened_item,
                     "activity_date": str(query.activity_date),
-                    "client": query.client,
-                    "service_order": query.service_order,
-                    "solped": query.solped,
-                    "person_receives": query.person_receives,
-                    "buy_order": query.buy_order,
-                    "description": query.description,
+                    "client_id": query.client_id,
+                    "client_name": query.client_name,
+                    "client_line_id": query.client_line_id,
+                    "client_line": query.client_line,
+                    "person_receive_id": query.person_receive_id,
+                    "person_receive_name": str(query.person_receive_name).upper(),
+                    "om": query.om,
+                    "equipment_type_id": query.equipment_type_id,
+                    "equipment_name": str(query.equipment_name).upper(),
+                    "service_description": str(query.service_description).capitalize(),
                 }
 
-                type_maintenance = list()
+                type_service = list()
                 files = list()
+                tasks = list()
 
                 query2 = session.query(
-                    ReportTypeMaintenanceModel.id,
-                    ReportTypeMaintenanceModel.id_report,
-                    TypeMaintenanceModel.name
+                    ReportTypeServiceModel.report_id,
+                    TypeServiceModel.id,
+                    TypeServiceModel.name
                 ).join(
-                    TypeMaintenanceModel, 
-                    TypeMaintenanceModel.id == ReportTypeMaintenanceModel.type_maintenance_id,
+                    TypeServiceModel, 
+                    TypeServiceModel.id == ReportTypeServiceModel.type_service_id,
                     isouter=True
                 ).filter(
-                    ReportTypeMaintenanceModel.id_report == report_id,
-                    TypeMaintenanceModel.status == 1
+                    ReportTypeServiceModel.report_id == report_id,
+                    TypeServiceModel.status == 1
                 ).all()
 
                 if query2:
                     for key in query2:
-                        type_maintenance.append({
+                        type_service.append({
                             "id": key.id,
-                            "report_id": key.id_report,
+                            "report_id": key.report_id,
                             "name": key.name
                         })
 
-                response.update({"type_maintenance": type_maintenance})
+                response.update({"type_service": type_service})
 
                 query3 = session.query(
                     ReportFilesModel.id, ReportFilesModel.path
@@ -372,6 +405,38 @@ class Querys:
                         })
 
                 response.update({"files": files})
+
+                query4 = session.query(
+                    ReportModel.id,
+                    ReportDetailsModel.task_id,
+                    TaskListModel.name,
+                    ReportDetailsModel.positive,
+                    ReportDetailsModel.negative,
+                    ReportDetailsModel.description,
+                ).join(
+                    ReportDetailsModel,
+                    ReportDetailsModel.report_id == ReportModel.id
+                ).join(
+                    TaskListModel,
+                    TaskListModel.id == ReportDetailsModel.task_id
+                ).filter(
+                    ReportDetailsModel.status == 1,
+                    TaskListModel.status == 1,
+                    ReportModel.status == 1,
+                    ReportDetailsModel.report_id == report_id
+                ).all()
+
+                if query4:
+                    for key in query4:
+                        tasks.append({
+                            "id": key.id,
+                            "name": key.name,
+                            "positive": key.positive,
+                            "negative": key.negative,
+                            "description": str(key.description).capitalize(),
+                        })
+
+                response.update({"tasks": tasks})
 
         except Exception as ex:
             raise CustomException(str(ex))

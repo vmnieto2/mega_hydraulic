@@ -17,6 +17,8 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 import textwrap
 from reportlab.lib.utils import ImageReader
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 
 
@@ -92,26 +94,28 @@ class Tools:
         pdf.setFont('Helvetica', 10)
 
         # Escribir datos en el PDF
-        pdf.drawString(310, 545, f"{data['intervened_item']}")
-        pdf.drawString(195, 522, f"{data['activity_date']}")
-        pdf.drawString(195, 508, f"{data['client']}")
-        pdf.drawString(195, 494, f"{data['service_order']}")
-        pdf.drawString(195, 480, f"{data['solped']}")
-        pdf.drawString(195, 466, f"{data['person_receives']}")
-        pdf.drawString(400, 522, f"{data['buy_order']}")
-        y_position = 400
-        y_position = self.ajust_long_text(pdf, data['description'], 77, y_position, 550)
+        pdf.drawString(152, 600, f"{data['activity_date']}")
+        pdf.drawString(152, 582, f"{data['om']}")
+        pdf.drawString(152, 568, f"{data['client_name']}")
+        pdf.drawString(152, 555, f"{data['client_line']}")
+        pdf.drawString(152, 537, f"{data['person_receive_name']}")
+        pdf.drawString(195, 500, f"{data['equipment_name']}")
 
-        # Ajustar la lista de tipos de mantenimiento justo debajo de la descripción
-        maintenance_list = data["type_maintenance"]
-        if maintenance_list:
-            y_position = self.ajust_list(pdf, maintenance_list, x=57, y=y_position - 20)  # Ajusta el espaciado
+        # Function for set the X mark on the report
+        self.set_type_service(pdf, data["type_service"])
+        y_position = 485
+        y_position = self.ajust_long_text(pdf, data['service_description'], 195, y_position, 450)
+
+        # Ajustar la lista de tareas justo debajo de la descripción
+        tasks = data["tasks"]
+        if tasks:
+            y_position = self.ajust_list(pdf, tasks, x=40, y=y_position - 20)  # Ajusta el espaciado
 
         # Agregar las imágenes justo debajo de la lista de mantenimiento
         image_paths = data["files"]
         if image_paths:
             max_height = 170  # Altura mínima para imágenes
-            y_position = self.ajust_images(pdf, image_paths, x=100, y=y_position - 20, max_height=max_height, page_height=letter[1])
+            y_position = self.ajust_images(pdf, image_paths, x=100, y=0, max_height=max_height, page_height=letter[1])
 
         # Guardar el PDF con los datos escritos en el buffer
         pdf.save()
@@ -122,14 +126,17 @@ class Tools:
         # Leer el nuevo PDF con los datos
         new_pdf = PdfReader(packet)
 
-        # Combinar cada página del PDF original con la página nueva
-        print(len(reader.pages))
-        for i in range(len(reader.pages)):
-            page = reader.pages[i]
-            print(page)
-            if i == 0:  # Solo superponemos los datos en la primera página
+        # Combinar cada página del PDF original con las páginas generadas
+        for i, page in enumerate(reader.pages):
+            if i == 0:  # Solo superponer en la primera página del original
                 page.merge_page(new_pdf.pages[0])
-            writer.add_page(page)
+                writer.add_page(page)
+            else:
+                writer.add_page(page)
+
+        # Agregar las páginas adicionales del nuevo PDF (imágenes en este caso)
+        for i in range(1, len(new_pdf.pages)):
+            writer.add_page(new_pdf.pages[i])
 
         # Guardar el PDF final en memoria
         output_buffer = BytesIO()
@@ -140,6 +147,7 @@ class Tools:
 
         return output_buffer.read()
     
+    # Función para ajustar textos largos
     def ajust_long_text(self, can, text, x, y, max_width):
         """
         Función que ajusta el texto a varias líneas si es demasiado largo.
@@ -163,62 +171,108 @@ class Tools:
 
         return y  # Devuelve la posición y después de pintar el texto
 
-    def ajust_list(self, can, maintenance_list, x, y):
+    # Función para ajustar la lista de tareas
+    def ajust_list(self, can, tasks, x, y):
         """
-        Función para agregar la lista de mantenimientos justo debajo de la descripción.
+        Función para agregar la lista de tareas justo debajo de la descripción.
         :param can: El objeto canvas de ReportLab.
-        :param maintenance_list: La lista de mantenimientos a dibujar.
+        :param tasks: La lista de tareas a dibujar.
         :param x: La posición x en el PDF.
         :param y: La posición y en el PDF.
-        :return: La nueva coordenada 'y' después de haber escrito la lista de mantenimientos.
+        :return: La nueva coordenada 'y' después de haber escrito la lista de tareas.
         """
         y -= 12  # Mover hacia arriba para la lista
 
-        # Dibujar cada mantenimiento de la lista
-        for maintenance in maintenance_list:
-            can.drawString(x + 20, y, f"- {maintenance['name']}")
-            y -= 12  # Ajusta el espaciado entre los elementos de la lista
+        # Crear los títulos de la tabla
+        table_data = [["Tarea", "SI", "NO", "Descripción"]]
+
+        # Añadir los datos de las tareas
+        for task in tasks:
+            row = [
+                task["name"],
+                "✔" if task["positive"] == 1 else "",
+                "✔" if task["negative"] == 1 else "",
+                task["description"]
+            ]
+            table_data.append(row)
+
+        # Crear la tabla
+        table = Table(table_data, colWidths=[230, 30, 30, 250])  # Ajusta los anchos de las columnas
+
+        # Estilo de la tabla
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Fondo gris para la fila del encabezado
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Texto blanco para el encabezado
+            ('ALIGN', (1, 1), (2, -1), 'CENTER'),  # Centrar "SI" y "NO"
+            ('ALIGN', (3, 1), (3, -1), 'LEFT'),  # Alinear a la izquierda la columna "Descripción"
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Fuente en negrita para el encabezado
+            ('FONTSIZE', (0, 0), (-1, -1), 10),  # Tamaño de fuente
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),  # Espaciado inferior en el encabezado
+            ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),  # Fondo blanco para las filas
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Líneas de la tabla
+        ])
+        table.setStyle(style)
+
+        # Determinar el tamaño de la tabla
+        table_width, table_height = table.wrapOn(can, x, y)
+
+        # Dibujar la tabla en la posición especificada
+        table.drawOn(can, x, y - table_height)
 
         return y  # Devuelve la nueva coordenada y después de la lista
 
-    def ajust_images(self, can, image_paths, x, y, max_height, page_height, images_per_row=2):
+    # Función para ajustar las imagenes
+    def ajust_images(self, can, image_files, x, y, max_height, page_height):
         """
-        Función para agregar imágenes desde una lista de rutas en filas de 2, y crear nuevas páginas si es necesario.
+        Función para agregar imágenes al PDF, comenzando siempre desde la segunda página.
+        :param can: El objeto canvas de ReportLab.
+        :param image_paths: Lista de rutas de imágenes.
+        :param x: Posición x en el PDF.
+        :param y: Posición y en el PDF.
+        :param max_height: Altura máxima de una imagen.
+        :param page_height: Altura total de la página.
+        :return: La nueva coordenada y después de agregar las imágenes.
         """
-        image_width = 200  # Ancho de cada imagen
-        image_height = 150  # Altura de cada imagen
-        spacing_x = 20  # Espacio entre las imágenes horizontalmente
-        spacing_y = 20  # Espacio entre las imágenes verticalmente
+        # Forzar una nueva página al inicio
+        can.showPage()  
+        y = page_height - 50  # Reiniciar la posición 'y' en la nueva página
 
-        images_in_current_row = 0
-        x_start = x
+        for image in image_files:
+            image_path = image["path"]
 
-        cont=0
+            try:
+                # Dibujar la imagen en el PDF
+                can.drawImage(image_path, x, y - max_height, width=200, height=max_height)
 
-        for image_path in image_paths:
-            cont+=1
+                # Actualizar la posición 'y'
+                y -= max_height + 20  # Espaciado entre imágenes
 
-            # Verifica si la imagen cabe en la página actual
-            if y < max_height:
-                can.showPage()  # Crea una nueva página si no hay suficiente espacio
-                y = page_height - 50  # Resetea la posición 'y' en la nueva página
-                x = x_start
-                images_in_current_row = 0
+                # Verificar si necesitamos una nueva página
+                if y - max_height < 50:  # Si no hay espacio suficiente
+                    can.showPage()
+                    y = page_height - 50  # Reiniciar 'y' para la nueva página
 
-            # Cargar la imagen desde la ruta
-            if os.path.exists(image_path["path"]):
-                img = ImageReader(image_path["path"])
-                can.drawImage(img, x, y - image_height, width=image_width, height=image_height)  # Ajusta el tamaño de la imagen
-                images_in_current_row += 1
+            except Exception as e:
+                print(f"Error al dibujar la imagen {image_path}: {e}")
+                raise CustomException(f"Error al dibujar la imagen {image_path}: {e}")
 
-                # Si se han añadido 2 imágenes, pasa a la siguiente fila
-                if images_in_current_row >= images_per_row:
-                    images_in_current_row = 0
-                    y -= image_height + spacing_y  # Ajusta la posición y para la siguiente fila
-                    x = x_start  # Resetea la posición x para una nueva fila de imágenes
-                else:
-                    x += image_width + spacing_x
-        return y
+        return y  # Devuelve la posición final de 'y'
+    
+    # Función para setear cuando un tipo de servicio fue elegido.
+    def set_type_service(self, can, data):
+        
+        if data:
+            for key in data:
+                if key["id"] == 1:
+                    can.drawString(535, 600, "✔")
+                elif key["id"] == 2:
+                    can.drawString(535, 583, "✔")
+                elif key["id"] == 3:
+                    can.drawString(535, 568, "✔")
+                elif key["id"] == 4:
+                    can.drawString(535, 553, "✔")
+                elif key["id"] == 5:
+                    can.drawString(535, 538, "✔")
 
     # """ Obtener archivo"""
     # def get_file_b64(self, file_path):

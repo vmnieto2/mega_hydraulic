@@ -110,17 +110,17 @@ class Rules:
                 "obligatorio": True,
             },
             {
+                "tipo": "list",
+                "campo": "archivos",
+                "valor": params["files"],
+                "obligatorio": False,
+            },
+            {
                 "tipo": "int",
                 "campo": "usuario",
                 "valor": params["user_id"],
                 "obligatorio": True,
-            },
-            # {
-            #     "tipo": "list",
-            #     "campo": "archivos",
-            #     "valor": params["files"],
-            #     "obligatorio": False,
-            # }
+            }
         ]
         return validacion_dict
 

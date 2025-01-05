@@ -11,5 +11,5 @@ class Report(BaseModel):
     service_description: str
     type_service: list
     task_list: list
-    # files: list
+    files: list
     user_id: int
