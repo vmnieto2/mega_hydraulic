@@ -15,7 +15,7 @@ def create_report(request: Request, report: ReportSchema):
     response = Report().create_report(data)
     return response
 
-@report_router.post('/reports/generate_report', tags=["Reports"], response_model=dict)
+@report_router.post('/reports/generate_report', tags=["Reports"], response_model=dict, dependencies=[Depends(JWTBearer())])
 @http_decorator
 def generate_report(request: Request):
     data = getattr(request.state, "json_data", {})

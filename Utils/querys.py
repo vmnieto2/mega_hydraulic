@@ -34,7 +34,16 @@ class Querys:
         if not query:
             raise CustomException("User not found.")
         
-        return query
+        result = {
+            "document": query.document,
+            "first_name": str(query.first_name).capitalize(),
+            "last_name": str(query.last_name).capitalize(),
+            "user_type_id": query.user_type_id,
+            "password": query.password,
+            "email": query.email,
+        }
+
+        return result
     
     # Query for have all type documents
     def get_type_document(self):

@@ -8,5 +8,5 @@ class JWTBearer(HTTPBearer):
         auth = await super().__call__(request)
         data = validate_token(auth.credentials)
         data_user = Querys().get_user(data["document"])
-        if data["document"] != data_user.document:
+        if data["document"] != data_user["document"]:
             raise HTTPException(status_code=400, detail="Credenciales invalidas")

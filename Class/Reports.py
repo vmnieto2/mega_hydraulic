@@ -23,6 +23,7 @@ class Report:
         self.tools = Tools()
         self.querys = Querys()
 
+    # Funcion for create a report
     def create_report(self, data):
 
         try:
@@ -111,7 +112,7 @@ class Report:
             if imagenes:
                 self.proccess_images(id_report, imagenes)
 
-            return self.tools.output(200, "Report created successfully.", id_report)
+            return self.tools.output(200, "Report created successfully.")
 
         except Exception as ex:
             raise CustomException(str(ex))
