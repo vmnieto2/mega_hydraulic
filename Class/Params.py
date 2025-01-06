@@ -32,6 +32,7 @@ class Param:
         type_equipments = self.querys.get_type_equipments()
         return self.tools.output(200, "Ok.", type_equipments)
 
+
     def get_tasks_by_equipment(self, data: dict):
 
         equipment = data["equipment"]
@@ -49,3 +50,8 @@ class Param:
         client = data["client"]
         lines = self.querys.get_users_by_client(client)
         return self.tools.output(200, "Ok.", lines)
+
+    def get_clients(self):
+
+        clients = self.querys.get_clients()
+        return self.tools.output(200, "Ok.", clients)

@@ -93,14 +93,14 @@ class Querys:
         return response
 
     # Query for have all type maintenances
-    def get_type_maintenance(self):
+    def get_clients(self):
 
         response = list()
                 
         query = session.query(
-            TypeMaintenanceModel
+            ClientModel
         ).filter(
-            TypeMaintenanceModel.status == 1
+            ClientModel.status == 1
         ).all()
         session.close()
         
@@ -248,7 +248,7 @@ class Querys:
         for key in query:
             response.append({
                 "id": key.id,
-                "name": key.full_name
+                "name": str(key.full_name).upper()
             })
         
         return response

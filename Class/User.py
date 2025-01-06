@@ -20,8 +20,8 @@ class User:
         if not check_password_hash(enc_passwd, password):
             raise CustomException("Username or password incorrect.")
         
-        if data_user["user_type_id"] != 1:
-            raise CustomException("User not authorized.", 401)
+        # if data_user["user_type_id"] != 1:
+        #     raise CustomException("User not authorized.", 401)
 
         token = create_token(data)
         data_user["token"] = token

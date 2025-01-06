@@ -57,3 +57,9 @@ def get_users_by_client(request: Request):
     data = getattr(request.state, "json_data", {})
     response = Param().get_users_by_client(data)
     return response
+
+@param_router.post('/params/get_clients', tags=["Params"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def get_clients(request: Request):
+    response = Param().get_clients()
+    return response

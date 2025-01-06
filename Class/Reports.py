@@ -96,7 +96,6 @@ class Report:
                         data_type_service
                     )
 
-
             if task_list:
                 for task in task_list:
                     data_report_details_save = {
