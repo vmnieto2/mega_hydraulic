@@ -35,6 +35,7 @@ class Querys:
             raise CustomException("User not found.")
         
         result = {
+            "id": query.id,
             "document": query.document,
             "first_name": str(query.first_name).capitalize(),
             "last_name": str(query.last_name).capitalize(),
@@ -400,7 +401,8 @@ class Querys:
                 response.update({"type_service": type_service})
 
                 query3 = session.query(
-                    ReportFilesModel.id, ReportFilesModel.path
+                    ReportFilesModel.id, ReportFilesModel.path,
+                    ReportFilesModel.description
                 ).filter(
                     ReportFilesModel.id_report == report_id,
                     ReportFilesModel.status == 1
@@ -410,7 +412,8 @@ class Querys:
                     for key in query3:
                         files.append({
                             "id": key.id,
-                            "path": key.path
+                            "path": key.path,
+                            "description": key.description
                         })
 
                 response.update({"files": files})

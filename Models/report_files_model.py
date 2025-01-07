@@ -9,9 +9,11 @@ class ReportFilesModel(BASE):
     id = Column(BigInteger, primary_key=True)
     id_report = Column(BigInteger, nullable=False)
     path = Column(Text)
+    description = Column(Text)
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(), default=datetime.now(), nullable=False)
 
     def __init__(self, data: dict):
         self.id_report = data['id_report']
         self.path = data['path']
+        self.description = data['description']

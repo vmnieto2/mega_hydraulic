@@ -239,13 +239,20 @@ class Tools:
 
         for image in image_files:
             image_path = image["path"]
+            img_description = image["description"]
+            if not img_description:
+                img_description = ""
 
             try:
                 # Dibujar la imagen en el PDF
-                can.drawImage(image_path, x, y - max_height, width=200, height=max_height)
+                can.drawImage(image_path, x, y - max_height, width=300, height=max_height)
+
+                # Colocar descripcion de imagen
+                y -= max_height + 15
+                can.drawString(x, y, f"{img_description}")
 
                 # Actualizar la posición 'y'
-                y -= max_height + 20  # Espaciado entre imágenes
+                y -= max_height + 1  # Espaciado entre imágenes
 
                 # Verificar si necesitamos una nueva página
                 if y - max_height < 50:  # Si no hay espacio suficiente

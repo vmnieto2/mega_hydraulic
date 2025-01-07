@@ -14,6 +14,8 @@ import os
 import base64
 import uuid
 import re
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 UPLOAD_FOLDER = "Uploads/"
 
@@ -108,10 +110,11 @@ class Report:
                     self.querys.insert_report_details(data_report_details_save)
 
             imagenes = data["files"]
+            print(f"imagenes: {imagenes}")
             if imagenes:
                 self.proccess_images(id_report, imagenes)
 
-            return self.tools.output(200, "Report created successfully.")
+            return self.tools.output(201, "Reporte creado exitosamente.", id_report)
 
         except Exception as ex:
             raise CustomException(str(ex))
@@ -146,7 +149,8 @@ class Report:
 
             data_save = {
                 "id_report": id_report,
-                "path": file_path
+                "path": file_path,
+                "description": file_base64["description"],
             }
             self.querys.insert_data(ReportFilesModel, data_save)
 
@@ -174,4 +178,12 @@ class Report:
         file_name = f"reporte_{data['report_id']}_{str(datetime.now())}.pdf"
 
         # return self.tools.output(200, "Ok", data_report)
-        return self.tools.outputpdf(200, file_name, pdf)
+        # return self.tools.outputpdf(200, file_name, pdf)
+        # Retornar el PDF como respuesta
+        return StreamingResponse(
+            BytesIO(pdf),
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}",
+                "Content-Type": "application/pdf",
+            },
+        )
