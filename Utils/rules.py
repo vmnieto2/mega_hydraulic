@@ -18,6 +18,7 @@ class Rules:
             "/params/get_lines_by_client": self.__val_get_lines_by_client,
             "/params/get_users_by_client": self.__val_get_users_by_client,
             "/reports/generate_report": self.__val_generate_report,
+            "/reports/list_report": self.__val_list_report,
         }
         # Se obtiene la funcion a ejecutar
         func = path_dict.get(path, None)
@@ -221,6 +222,36 @@ class Rules:
                 "tipo": "int",
                 "campo": "reporte id",
                 "valor": params["report_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data list report
+    def __val_list_report(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "limite",
+                "valor": params["limit"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "posición de página",
+                "valor": params["position"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "bool",
+                "campo": "estado",
+                "valor": params["state"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "int",
+                "campo": "usuario",
+                "valor": params["user_id"],
                 "obligatorio": True,
             }
         ]

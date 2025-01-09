@@ -110,7 +110,6 @@ class Report:
                     self.querys.insert_report_details(data_report_details_save)
 
             imagenes = data["files"]
-            print(f"imagenes: {imagenes}")
             if imagenes:
                 self.proccess_images(id_report, imagenes)
 
@@ -187,3 +186,60 @@ class Report:
                 "Content-Type": "application/pdf",
             },
         )
+
+    # Function for list the reports
+    def list_report(self, data: dict):
+
+        print(data)
+        
+        message = "Información de reportes generado correctamente."
+        limit = int(data["limit"])
+        page_position = int(data["position"])
+        state = data["state"]
+        user_id = int(data["user_id"])
+        reports_dict = list()
+
+        if page_position <= 0:
+            message = "El campo posición no es válido"
+            raise CustomException(message)
+        
+        if state:
+            reports = self.querys.list_reports(data)
+
+        if not state:
+            reports = self.querys.list_reports(data, user_id, state)
+
+        data_report = reports["reports"]
+        reg_cont = reports["reg_cont"]
+
+        if not data_report:
+            message = "No hay listado de reportes que mostrar."
+            return self.tools.output(200, message, data={
+            "total_registros": 0,
+            "total_pag": 0,
+            "posicion_pag": 0,
+            "reportes": []
+        })
+
+        if reg_cont%limit == 0:
+            total_pag = reg_cont//limit
+        else:
+            total_pag = reg_cont//limit + 1
+
+        if total_pag < int(page_position):
+            message = "La posición excede el número total de registros."
+            return self.tools.output(200, message, data={
+            "total_registros": 0,
+            "total_pag": 0,
+            "posicion_pag": 0,
+            "reportes": []
+        })
+
+        reports_dict = {
+            "total_registros": reg_cont,
+            "total_pag": total_pag,
+            "posicion_pag": page_position,
+            "reportes": data_report
+        }
+
+        return self.tools.output(200, message, reports_dict)

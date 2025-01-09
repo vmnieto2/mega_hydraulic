@@ -17,6 +17,7 @@ class UserModel(BASE):
     email = Column(String, nullable=False)
     password = Column(Text)
     user_type_id = Column(Integer, nullable=False)
+    photo = Column(String, nullable=False)
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(), default=datetime.now(), nullable=False)
     
@@ -29,4 +30,5 @@ class UserModel(BASE):
         self.email = data['email']
         self.password = data['password']
         self.user_type_id = data['user_type_id']
+        self.photo = data['photo']
     

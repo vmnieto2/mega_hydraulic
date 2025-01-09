@@ -15,6 +15,8 @@ from Models.client_user_model import ClientUserModel
 from Models.report_model import ReportModel
 from Models.report_details_model import ReportDetailsModel
 from Models.report_files_model import ReportFilesModel
+from Models.module_model import ModulesModel
+from Models.permission_model import PermissionModel
 
 class Querys:
 
@@ -34,6 +36,38 @@ class Querys:
         if not query:
             raise CustomException("User not found.")
         
+        permission = list()
+        query2 = session.query(
+            ModulesModel.id,
+            ModulesModel.name, 
+            ModulesModel.description, 
+            ModulesModel.icon,
+            ModulesModel.action
+        ).join(
+            PermissionModel,
+            PermissionModel.module_id == ModulesModel.id
+        ).join(
+            TypeUserModel,
+            TypeUserModel.id == PermissionModel.type_user_id
+        ).filter(
+            ModulesModel.status == 1,
+            PermissionModel.status == 1,
+            TypeUserModel.status == 1,
+            TypeUserModel.id == query.user_type_id
+        ).order_by(
+            PermissionModel.module_id.asc()
+        ).all()
+        session.close()
+        if query2:
+            for key in query2:
+                permission.append({
+                    "id": key.id,
+                    "name": key.name,
+                    "description": key.description,
+                    "icon": key.icon,
+                    "action": key.action,
+                })
+        
         result = {
             "id": query.id,
             "document": query.document,
@@ -42,6 +76,8 @@ class Querys:
             "user_type_id": query.user_type_id,
             "password": query.password,
             "email": query.email,
+            "photo": query.photo,
+            "permission": permission,
         }
 
         return result
@@ -449,6 +485,94 @@ class Querys:
                         })
 
                 response.update({"tasks": tasks})
+
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+
+        return response
+
+    # Query for get the reports according to case
+    def list_reports(self, data, user_id = None, state: bool = True):
+        
+        try:
+            response = list()
+            query = session.query(
+                ReportModel.id, 
+                ReportModel.activity_date,
+                ClientModel.name.label('client_name'),
+                ClientLinesModel.name.label('client_line'),
+                ClientUserModel.full_name.label('person_receive_name'),
+                ReportModel.om,
+                TypeEquipmentModel.name.label('type_equipment_name'),
+                ReportModel.equipment_name,
+                UserModel.first_name,
+                UserModel.last_name
+            ).join(
+                ClientModel, 
+                ClientModel.id == ReportModel.client_id,
+                isouter=True
+            ).join(
+                ClientLinesModel, 
+                ClientLinesModel.id == ReportModel.client_line_id,
+                isouter=True
+            ).join(
+                ClientUserModel, 
+                ClientUserModel.id == ReportModel.person_receives,
+                isouter=True
+            ).join(
+                TypeEquipmentModel, 
+                TypeEquipmentModel.id == ReportModel.equipment_type_id,
+                isouter=True
+            ).join(
+                UserModel, 
+                UserModel.id == ReportModel.user_id,
+                isouter=True
+            ).filter(
+                ClientModel.status == 1,
+                ClientLinesModel.status == 1,
+                ClientUserModel.status == 1,
+                TypeEquipmentModel.status == 1,
+                UserModel.status == 1,
+                ReportModel.status == 1
+            )
+            if state:
+                query = query.order_by(
+                    ReportModel.id.desc()
+                )
+
+            if not state:
+                query = query.filter(
+                    ReportModel.user_id == user_id
+                ).order_by(
+                    ReportModel.id.desc()
+                )
+
+            if query:
+                
+                reg_cont = query.count()
+
+                reports = query.limit(data["limit"]).offset(data["limit"]*(int(data["position"])-1))
+
+                for key in reports:
+                    first_name = str(key.first_name).upper()
+                    last_name = str(key.last_name).upper()
+                    response.append({
+                        "id": key.id,
+                        "activity_date": key.activity_date,
+                        "client_name": key.client_name,
+                        "client_line": key.client_line,
+                        "person_receive_name": str(key.person_receive_name).upper(),
+                        "om": key.om,
+                        "type_equipment_name": key.type_equipment_name,
+                        "equipment_name": str(key.equipment_name).capitalize(),
+                        "user_name": f"{first_name} {last_name}"
+                    })
+
+                response = {"reports": response, "reg_cont": reg_cont}
+
+            return response
 
         except Exception as ex:
             raise CustomException(str(ex))

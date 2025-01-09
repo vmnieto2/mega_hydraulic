@@ -21,3 +21,10 @@ def generate_report(request: Request):
     data = getattr(request.state, "json_data", {})
     response = Report().generate_report(data)
     return response
+
+@report_router.post('/reports/list_report', tags=["Reports"], response_model=dict, dependencies=[Depends(JWTBearer())])
+@http_decorator
+def list_report(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Report().list_report(data)
+    return response
