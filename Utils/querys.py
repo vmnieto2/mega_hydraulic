@@ -347,6 +347,30 @@ class Querys:
         
         return True
 
+    # switching rows in 0 status.
+    def deactive_data(self, model: any, report_id: dict):
+
+        try:
+            query = session.query(
+                model
+            ).filter(
+                model.report_id == report_id, model.status == 1
+            ).all()
+
+            if not query:
+                return True
+
+            for key in query:
+                key.status = 0
+                session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
     # Query for get the data for the report
     def get_data_report(self, report_id):
 
@@ -365,7 +389,7 @@ class Querys:
                 ClientUserModel.full_name.label('person_receive_name'),
                 ReportModel.om,
                 ReportModel.equipment_type_id,
-                TypeEquipmentModel.name.label('equipment_name'),
+                TypeEquipmentModel.name.label('equipment_type_name'),
                 ReportModel.equipment_name,
                 ReportModel.service_description,
             ).join(
@@ -405,6 +429,7 @@ class Querys:
                     "person_receive_name": str(query.person_receive_name).upper(),
                     "om": query.om,
                     "equipment_type_id": query.equipment_type_id,
+                    "equipment_type_name": query.equipment_type_name,
                     "equipment_name": str(query.equipment_name).upper(),
                     "service_description": str(query.service_description).capitalize(),
                 }
@@ -423,6 +448,7 @@ class Querys:
                     isouter=True
                 ).filter(
                     ReportTypeServiceModel.report_id == report_id,
+                    ReportTypeServiceModel.status == 1,
                     TypeServiceModel.status == 1
                 ).all()
 
@@ -440,7 +466,7 @@ class Querys:
                     ReportFilesModel.id, ReportFilesModel.path,
                     ReportFilesModel.description
                 ).filter(
-                    ReportFilesModel.id_report == report_id,
+                    ReportFilesModel.report_id == report_id,
                     ReportFilesModel.status == 1
                 ).all()
 
@@ -477,7 +503,7 @@ class Querys:
                 if query4:
                     for key in query4:
                         tasks.append({
-                            "id": key.id,
+                            "id": key.task_id,
                             "name": key.name,
                             "positive": key.positive,
                             "negative": key.negative,
@@ -579,4 +605,55 @@ class Querys:
         finally:
             session.close()
 
-        return response
+    # Query for find images and update the description.
+    def find_image_and_update(self, report_id, img):
+        
+        try:
+            query = session.query(
+                ReportFilesModel
+            ).filter(
+                ReportFilesModel.report_id == report_id,
+                ReportFilesModel.path == img["img"],
+                ReportFilesModel.status == 1
+            ).first()
+
+            if query:
+                query.description = img["description"]
+                session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for update the information of report
+    def edit_report(self, data):
+        
+        try:
+            query = session.query(
+                ReportModel
+            ).filter(
+                ReportModel.id == data["report_id"],
+                ReportModel.status == 1
+            ).first()
+
+            if query:
+                query.activity_date = data["activity_date"]
+                query.client_id = data["client_id"]
+                query.client_line_id = data["client_line_id"]
+                query.person_receives = data["person_receives"]
+                query.om = data["om"]
+                query.equipment_type_id = data["equipment_type_id"]
+                query.equipment_name = data["equipment_name"]
+                query.service_description = data["service_description"]
+                query.user_id = data["user_id"]
+                session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True

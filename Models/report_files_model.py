@@ -7,13 +7,13 @@ class ReportFilesModel(BASE):
     __tablename__= "report_files"
     
     id = Column(BigInteger, primary_key=True)
-    id_report = Column(BigInteger, nullable=False)
+    report_id = Column(BigInteger, nullable=False)
     path = Column(Text)
     description = Column(Text)
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(), default=datetime.now(), nullable=False)
 
     def __init__(self, data: dict):
-        self.id_report = data['id_report']
+        self.report_id = data['report_id']
         self.path = data['path']
         self.description = data['description']

@@ -1,5 +1,7 @@
 from Utils.tools import Tools, CustomException
 from Utils.querys import Querys
+from Models.report_model import ReportModel
+from Models.report_details_model import ReportDetailsModel
 from Models.client_model import ClientModel
 from Models.client_lines_model import ClientLinesModel
 from Models.client_user_model import ClientUserModel
@@ -123,6 +125,12 @@ class Report:
 
         # Procesar y guardar cada archivo de la lista "files"
         for index, file_base64 in enumerate(imagenes):
+            isbase64 = True if file_base64["img"].startswith("data:image/") else False
+
+            if not isbase64:
+                self.querys.find_image_and_update(id_report, file_base64)
+                continue
+                
             try:
                 # Extraer el formato de la imagen
                 file_extension = self.extract_file_extension(file_base64["img"])
@@ -147,7 +155,7 @@ class Report:
                 raise CustomException(f"Error al guardar la imagen {index + 1}: {str(e)}")
 
             data_save = {
-                "id_report": id_report,
+                "report_id": id_report,
                 "path": file_path,
                 "description": file_base64["description"],
             }
@@ -165,9 +173,10 @@ class Report:
         return match.group("ext")
 
     # Function for generate pdf of the report
-    def generate_report(self, data):
+    def generate_report(self, data: dict):
 
         report_id = data["report_id"]
+        flag = data.get("flag", False)
 
         data_report = self.querys.get_data_report(report_id)
 
@@ -179,18 +188,19 @@ class Report:
         # return self.tools.output(200, "Ok", data_report)
         # return self.tools.outputpdf(200, file_name, pdf)
         # Retornar el PDF como respuesta
-        return StreamingResponse(
-            BytesIO(pdf),
-            headers={
-                "Content-Disposition": f"attachment; filename={file_name}",
-                "Content-Type": "application/pdf",
-            },
-        )
+        if flag:
+            return StreamingResponse(
+                BytesIO(pdf),
+                headers={
+                    "Content-Disposition": f"attachment; filename={file_name}",
+                    "Content-Type": "application/pdf",
+                },
+            )
+        
+        return self.tools.output(200, "Ok", data_report)
 
     # Function for list the reports
     def list_report(self, data: dict):
-
-        print(data)
         
         message = "Información de reportes generado correctamente."
         limit = int(data["limit"])
@@ -243,3 +253,113 @@ class Report:
         }
 
         return self.tools.output(200, message, reports_dict)
+
+    # Function for edit existing reporte
+    def edit_report(self, data: dict):
+        
+        try:
+            data_save = {
+                "report_id": data["report_id"],
+                "activity_date": self.tools.format_date(data["activity_date"]),
+                "client_id": data["client_id"],
+                "client_line_id": data["client_line_id"],
+                "person_receives": data["person_receives"],
+                "om": data["om"],
+                "equipment_type_id": data["equipment_type_id"],
+                "equipment_name": data["equipment_name"],
+                "service_description": data["service_description"],
+                "user_id": data["user_id"]
+            }
+
+            self.querys.check_param_exists(
+                ReportModel, 
+                data["report_id"], 
+                "Reporte"
+            )
+
+            self.querys.check_param_exists(
+                ClientModel, 
+                data["client_id"], 
+                "Cliente"
+            )
+
+            self.querys.check_param_exists(
+                ClientLinesModel, 
+                data["client_line_id"], 
+                "Línea"
+            )
+
+            self.querys.check_param_exists(
+                ClientUserModel, 
+                data["person_receives"], 
+                "Persona que recibe"
+            )
+
+            self.querys.check_param_exists(
+                TypeEquipmentModel, 
+                data["equipment_type_id"], 
+                "Tipo de equipo intervenido"
+            )
+
+            type_service = data["type_service"]
+            if type_service:
+                for index, type_s in enumerate(type_service):
+                    Rules("/service_types", type_s)
+                    self.querys.check_param_exists(
+                        TypeServiceModel, 
+                        type_s,
+                        f"Tipo servicio {index+1}"
+                    )
+
+            task_list = data["task_list"]
+            if task_list:
+                for index, task in enumerate(task_list):
+                    Rules("/task_list", task)
+                    self.querys.check_param_exists(
+                        TaskListModel, 
+                        task["task_id"],
+                        f"Tarea {index+1}"
+                    )
+
+            self.querys.edit_report(data_save)
+
+            if type_service:
+                self.querys.deactive_data(
+                    ReportTypeServiceModel, 
+                    data["report_id"]
+                )
+                for type_s in type_service:
+                    data_type_service = {
+                        "report_id": data["report_id"],
+                        "type_service_id": type_s,
+                    }
+                    self.querys.insert_data(
+                        ReportTypeServiceModel, 
+                        data_type_service
+                    )
+
+            if task_list:
+                self.querys.deactive_data(
+                    ReportDetailsModel, 
+                    data["report_id"]
+                )
+                for task in task_list:
+                    data_report_details_save = {
+                        "report_id": data["report_id"],
+                        "task_id": task["task_id"],
+                        "positive": task["positive"],
+                        "negative": task["negative"],
+                        "description": task["description"]
+                    }
+                    self.querys.insert_report_details(data_report_details_save)
+
+            imagenes = data["files"]
+            if imagenes:
+                self.proccess_images(data["report_id"], imagenes)
+            else:
+                self.querys.deactive_data(ReportFilesModel, data["report_id"])
+
+            return self.tools.output(201, "Reporte editado exitosamente.", data["report_id"])
+
+        except Exception as ex:
+            raise CustomException(str(ex))

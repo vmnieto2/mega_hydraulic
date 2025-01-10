@@ -16,6 +16,7 @@ app.version = "0.0.1"
 
 # Sirve la carpeta "assets" en la ruta "/assets"
 app.mount("/assets", StaticFiles(directory=f"{route}/assets"), name="assets")
+app.mount("/Uploads", StaticFiles(directory=f"{route}/Uploads"), name="Uploads")
 app.add_middleware(JSONMiddleware)
 app.add_middleware(
     CORSMiddleware,

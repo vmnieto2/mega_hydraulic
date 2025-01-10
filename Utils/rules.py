@@ -19,6 +19,7 @@ class Rules:
             "/params/get_users_by_client": self.__val_get_users_by_client,
             "/reports/generate_report": self.__val_generate_report,
             "/reports/list_report": self.__val_list_report,
+            "/reports/edit_report": self.__val_edit_report,
         }
         # Se obtiene la funcion a ejecutar
         func = path_dict.get(path, None)
@@ -223,6 +224,12 @@ class Rules:
                 "campo": "reporte id",
                 "valor": params["report_id"],
                 "obligatorio": True,
+            },
+            {
+                "tipo": "bool",
+                "campo": "flag",
+                "valor": params["flag"],
+                "obligatorio": False,
             }
         ]
         return validacion_dict
@@ -246,6 +253,90 @@ class Rules:
                 "tipo": "bool",
                 "campo": "estado",
                 "valor": params["state"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "int",
+                "campo": "usuario",
+                "valor": params["user_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data create report
+    def __val_edit_report(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "reporte id",
+                "valor": params["report_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "date",
+                "campo": "fecha actividad",
+                "valor": params["activity_date"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "cliente",
+                "valor": params["client_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "línea del cliente",
+                "valor": params["client_line_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "persona que recibe",
+                "valor": params["person_receives"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "orden de mantenimiento",
+                "valor": params["om"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "list",
+                "campo": "tipos de servicio",
+                "valor": params["type_service"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "int",
+                "campo": "tipo de equipo",
+                "valor": params["equipment_type_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "nombre de equipo",
+                "valor": params["equipment_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "descripción del servicio",
+                "valor": params["service_description"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "list",
+                "campo": "lista de tareas",
+                "valor": params["task_list"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "list",
+                "campo": "archivos",
+                "valor": params["files"],
                 "obligatorio": False,
             },
             {
