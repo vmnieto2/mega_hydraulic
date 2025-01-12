@@ -304,7 +304,7 @@ class Querys:
         if not query:
             raise CustomException(msg)
 
-        return True
+        return query
     
     # Query for insert report.
     def create_report(self, data: dict):
@@ -650,6 +650,205 @@ class Querys:
                 query.service_description = data["service_description"]
                 query.user_id = data["user_id"]
                 session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for obtain the data of user
+    def get_data_user(self, user_id):
+
+        result = dict()
+        try:
+            query = session.query(
+                UserModel
+            ).filter(
+                UserModel.id == user_id, UserModel.status == 1,
+            ).first()
+            session.close()
+
+            if query:
+                result = {
+                    "id": query.id,
+                    "type_document": query.type_document,
+                    "document": query.document,
+                    "first_name": query.first_name,
+                    "second_name": query.second_name,
+                    "last_name": query.last_name,
+                    "second_last_name": query.second_last_name,
+                    "email": query.email
+                }
+
+            return result
+
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+
+    # Query for update user
+    def update_user(self, data: dict):
+
+        try:
+            query = session.query(
+                UserModel
+            ).filter(
+                UserModel.id == data["user_id"],
+                UserModel.status == 1
+            ).first()
+
+            if query:
+                full_name = f"{data["first_name"]} {data["second_name"]} {data["last_name"]} {data["second_last_name"]}"
+                query.first_name = data["first_name"]
+                query.second_name = data["second_name"]
+                query.last_name = data["last_name"]
+                query.second_last_name = data["second_last_name"]
+                query.full_name = full_name
+                query.email = data["email"]
+                photo = data.get("photo", '')
+                if photo:
+                    query.photo = photo
+                    
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return photo
+
+    # Query for search if document exists.
+    def check_document_exists(self, document):
+
+        query = session.query(
+            UserModel
+        ).filter(
+            UserModel.document == document,
+            UserModel.status == 1
+        ).first()
+        session.close()
+
+        msg = "Usuario ya se encuentra en la base de datos."
+        if query:
+            raise CustomException(msg)
+
+        return query
+
+    # Query for get the all the users
+    def list_users(self, data):
+        
+        try:
+            response = list()
+            query = session.query(
+                UserModel.id,
+                UserModel.document,
+                UserModel.first_name,
+                UserModel.last_name,
+                UserModel.email,
+                UserModel.user_type_id,
+                TypeUserModel.name.label('user_type'),
+                UserModel.status,
+            ).join(
+                TypeUserModel, 
+                TypeUserModel.id == UserModel.user_type_id,
+                isouter=True
+            ).filter(
+                TypeUserModel.status == 1
+            ).order_by(
+                UserModel.id.asc()
+            )
+
+            if query:
+                
+                reg_cont = query.count()
+
+                users = query.limit(data["limit"]).offset(data["limit"]*(int(data["position"])-1))
+
+                for key in users:
+                    first_name = str(key.first_name).upper()
+                    last_name = str(key.last_name).upper()
+                    response.append({
+                        "id": key.id,
+                        "document": key.document,
+                        "user_name": f"{first_name} {last_name}",
+                        "email": key.email,
+                        "user_type_id": key.user_type_id,
+                        "user_type": key.user_type,
+                        "status": key.status,
+                    })
+
+                response = {"users": response, "reg_cont": reg_cont}
+
+            return response
+
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+
+    # Query fot change status of the user
+    def change_status(self, data: dict):
+
+        try:
+            query = session.query(
+                UserModel
+            ).filter(
+                UserModel.id == data["user_id"]
+            ).first()
+
+            if query:
+                query.status = data["status"]
+                     
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for update type user id
+    def update_type_user(self, data: dict):
+
+        try:
+            query = session.query(
+                UserModel
+            ).filter(
+                UserModel.id == data["user_id"],
+            ).first()
+
+            if query:
+                query.user_type_id = data["user_type_id"]
+                     
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for update password
+    def change_password(self, user_id: int, new_passwd: str):
+
+        try:
+            query = session.query(
+                UserModel
+            ).filter(
+                UserModel.id == user_id,
+                UserModel.status == 1,
+            ).first()
+
+            if query:
+                query.password = new_passwd
+                     
+            session.commit()
                 
         except Exception as ex:
             raise CustomException(str(ex))

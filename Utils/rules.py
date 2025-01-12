@@ -20,6 +20,11 @@ class Rules:
             "/reports/generate_report": self.__val_generate_report,
             "/reports/list_report": self.__val_list_report,
             "/reports/edit_report": self.__val_edit_report,
+            "/user/get_user": self.__val_get_user,
+            "/user/create_user": self.__val_create_user,
+            "/user/update_user": self.__val_update_user,
+            "/user/change_status": self.__val_change_status,
+            "/user/update_type_user": self.__val_update_type_user,
         }
         # Se obtiene la funcion a ejecutar
         func = path_dict.get(path, None)
@@ -343,6 +348,156 @@ class Rules:
                 "tipo": "int",
                 "campo": "usuario",
                 "valor": params["user_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for get data user
+    def __val_get_user(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "usuario id",
+                "valor": params["user_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data create user
+    def __val_create_user(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "Tipo Documento",
+                "valor": params["type_document"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Documento",
+                "valor": params["document"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Primer Nombre",
+                "valor": params["first_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Segundo Nombre",
+                "valor": params["second_name"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "string",
+                "campo": "Primer Apellido",
+                "valor": params["last_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Segundo Apellido",
+                "valor": params["second_last_name"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "email",
+                "campo": "correo",
+                "valor": params["email"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "tipo usuario",
+                "valor": params["user_type_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data update user
+    def __val_update_user(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "Usuario",
+                "valor": params["user_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Primer Nombre",
+                "valor": params["first_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Segundo Nombre",
+                "valor": params["second_name"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "string",
+                "campo": "Primer Apellido",
+                "valor": params["last_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Segundo Apellido",
+                "valor": params["second_last_name"],
+                "obligatorio": False,
+            },
+            {
+                "tipo": "email",
+                "campo": "correo",
+                "valor": params["email"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "string",
+                "campo": "Foto",
+                "valor": params["photo"],
+                "obligatorio": False,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data update user
+    def __val_change_status(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "Usuario",
+                "valor": params["user_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "Estado",
+                "valor": params["status"],
+                "obligatorio": False,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data update user type
+    def __val_update_type_user(self, params):
+        validacion_dict = [
+            {
+                "tipo": "int",
+                "campo": "Usuario",
+                "valor": params["user_id"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "int",
+                "campo": "Tipo Usuario",
+                "valor": params["user_type_id"],
                 "obligatorio": True,
             }
         ]

@@ -17,11 +17,13 @@ class UserModel(BASE):
     email = Column(String, nullable=False)
     password = Column(Text)
     user_type_id = Column(Integer, nullable=False)
-    photo = Column(String, nullable=False)
+    photo = Column(String, nullable=True, default="assets/img/no-profile.jpg")
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(), default=datetime.now(), nullable=False)
     
     def __init__(self, data: dict):
+        self.type_document = data['type_document']
+        self.document = data['document']
         self.first_name = data['first_name']
         self.second_name = data['second_name']
         self.last_name = data['last_name']
@@ -30,5 +32,4 @@ class UserModel(BASE):
         self.email = data['email']
         self.password = data['password']
         self.user_type_id = data['user_type_id']
-        self.photo = data['photo']
     
