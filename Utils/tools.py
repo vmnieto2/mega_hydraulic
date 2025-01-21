@@ -235,27 +235,41 @@ class Tools:
         """
         # Forzar una nueva página al inicio
         can.showPage()  
+        page_width, _ = letter  # Obtener el ancho de la página estándar 'letter'
         y = page_height - 50  # Reiniciar la posición 'y' en la nueva página
 
         for image in image_files:
             image_path = image["path"]
             img_description = image["description"]
-            if not img_description:
+            if not image["description"]:
                 img_description = ""
 
             try:
-                # Dibujar la imagen en el PDF
-                can.drawImage(image_path, x, y - max_height, width=300, height=max_height)
+                # Obtener dimensiones de la imagen
+                img_width = 300  # Ancho fijo de imagen
+                img_height = max_height
 
-                # Colocar descripcion de imagen
-                y -= max_height + 15
-                can.drawString(x, y, f"{img_description}")
+                # Calcular posición x centrada
+                centered_x = (page_width - img_width) / 2
+
+                # Dibujar un borde antes de la imagen
+                border_margin = 5
+                can.setStrokeColorRGB(0, 0, 0)  # Color negro para el borde
+                can.rect(centered_x - border_margin, y - img_height - border_margin, 
+                        img_width + (border_margin * 2), img_height + (border_margin * 2), 
+                        stroke=1, fill=0)
+
+                # Dibujar la imagen centrada
+                can.drawImage(image_path, centered_x, y - img_height, width=img_width, height=img_height)
+
+                # Colocar descripción centrada debajo de la imagen
+                can.drawString(centered_x, y - img_height - 15, f"{img_description}")
 
                 # Actualizar la posición 'y'
-                y -= max_height + 1  # Espaciado entre imágenes
+                y -= img_height + 40  # Espaciado entre imágenes
 
                 # Verificar si necesitamos una nueva página
-                if y - max_height < 50:  # Si no hay espacio suficiente
+                if y - img_height < 50:  # Si no hay espacio suficiente
                     can.showPage()
                     y = page_height - 50  # Reiniciar 'y' para la nueva página
 
