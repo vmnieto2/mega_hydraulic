@@ -910,3 +910,83 @@ class Querys:
             session.close()
         
         return True
+
+    # Query for get data client by id
+    def get_client(self, client_id: int):
+
+        try:
+            response = dict()
+            lines = list()
+            persons = list()
+            query = session.query(
+                ClientModel.id,
+                ClientModel.name
+            ).filter(
+                ClientModel.id == client_id, ClientModel.status == 1
+            ).first()
+            session.commit()
+
+            if query:
+
+                query2 = session.query(
+                    ClientLinesModel.id,
+                    ClientLinesModel.name
+                ).filter(
+                    ClientLinesModel.client_id == client_id,
+                    ClientLinesModel.status == 1,
+                ).all()
+
+                if query2:
+                    for key in query2:
+                        lines.append({
+                            "id": key.id,
+                            "name": key.name,
+                        })
+
+                query3 = session.query(
+                    ClientUserModel.id,
+                    ClientUserModel.full_name,
+                ).filter(
+                    ClientUserModel.client_id == client_id,
+                    ClientUserModel.status == 1,
+                ).all()
+
+                if query3:
+                    for key in query3:
+                        persons.append({
+                            "id": key.id,
+                            "name": key.full_name,
+                        })
+
+                response = {
+                    "id": query.id,
+                    "name": query.name,
+                    "lines": lines,
+                    "persons": persons,
+                }
+
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return response
+
+    # Query for update client lines and person
+    def update_lines_or_person(self, model: any, client_id: int, param_id: int, data_update: dict):
+
+        try:
+            query = session.query(
+                model
+            ).filter_by(
+                id = param_id, client_id = client_id
+            ).update(data_update)                     
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True

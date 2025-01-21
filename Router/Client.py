@@ -26,3 +26,17 @@ def update_client(request: Request):
     data = getattr(request.state, "json_data", {})
     response = Client().update_client(data)
     return response
+
+@client_router.post('/client/get_client', tags=["Client"], response_model=dict)
+@http_decorator
+def get_client(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Client().get_client(data)
+    return response
+
+@client_router.post('/client/add_line_person', tags=["Client"], response_model=dict)
+@http_decorator
+def add_line_person(request: Request):
+    data = getattr(request.state, "json_data", {})
+    response = Client().add_line_person(data)
+    return response

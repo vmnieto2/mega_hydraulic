@@ -97,8 +97,77 @@ class Client:
             data_update = {"status": data["status"]}
             self.querys.update_client(client_id, data_update)
             return self.tools.output(200, msg)
+        
+        self.querys.check_param_exists(
+            ClientModel,
+            client_id,
+            "cliente id"
+        )
 
-        data_update = {"name": data["client_name"]}
+        client_name = data["client_name"]
+        lines = data["lines_list"]
+        persons = data["person_list"]
+
+        data_update = {"name": client_name}
         self.querys.update_client(client_id, data_update)
 
+        if lines:
+            for line in lines:
+                line_id = line["id"]
+                data_update = {"name": line["name"]}      
+                self.querys.update_lines_or_person(
+                    ClientLinesModel,
+                    client_id, 
+                    line_id,
+                    data_update
+                )
+
+        if persons:
+            for person in persons:
+                person_id = person["id"]
+                data_update = {"full_name": person["name"]}      
+                self.querys.update_lines_or_person(
+                    ClientUserModel,
+                    client_id, 
+                    person_id,
+                    data_update
+                )
+
         return self.tools.output(200, "Cliente actualizado.")
+
+    # Function for get client by id
+    def get_client(self, data: dict):
+
+        response = dict()
+        client_id = data["client_id"]
+
+        self.querys.check_param_exists(
+            ClientModel,
+            client_id,
+            "cliente id"
+        )
+
+        response = self.querys.get_client(client_id)
+
+
+        return self.tools.output(200, "Cliente encontrado.", response)
+
+    # Function for add lines and person to existing client
+    def add_line_person(self, data):
+
+        client_id = data["client_id"]
+        lines_list = data["lines_list"]
+        person_list = data["person_list"]
+
+        if lines_list:
+            for line in lines_list:
+                lines_insert = {"client_id": client_id, "name": line}
+                self.querys.insert_data(ClientLinesModel, lines_insert)
+
+        if person_list:
+            for person in person_list:
+                person_insert = {"client_id": client_id, "full_name": person}
+                self.querys.insert_data(ClientUserModel, person_insert)
+
+
+        return self.tools.output(201, "Parametros agregados exitosamente.")
