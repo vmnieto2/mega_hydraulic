@@ -25,6 +25,7 @@ class Rules:
             "/user/update_user": self.__val_update_user,
             "/user/change_status": self.__val_change_status,
             "/user/update_type_user": self.__val_update_type_user,
+            "/client/create": self.__val_create_client,
         }
         # Se obtiene la funcion a ejecutar
         func = path_dict.get(path, None)
@@ -498,6 +499,30 @@ class Rules:
                 "tipo": "int",
                 "campo": "Tipo Usuario",
                 "valor": params["user_type_id"],
+                "obligatorio": True,
+            }
+        ]
+        return validacion_dict
+
+    # Validate data for create client
+    def __val_create_client(self, params):
+        validacion_dict = [
+            {
+                "tipo": "string",
+                "campo": "Nombre de cliente",
+                "valor": params["client_name"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "list",
+                "campo": "Lista de líneas",
+                "valor": params["lines_list"],
+                "obligatorio": True,
+            },
+            {
+                "tipo": "list",
+                "campo": "Lista de personas",
+                "valor": params["person_list"],
                 "obligatorio": True,
             }
         ]

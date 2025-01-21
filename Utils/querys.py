@@ -340,12 +340,13 @@ class Querys:
             model_data = model(data)
             session.add(model_data)
             session.commit()
+            model_id = model_data.id
         except Exception as ex:
             raise CustomException(str(ex))
         finally:
             session.close()
         
-        return True
+        return model_id
 
     # switching rows in 0 status.
     def deactive_data(self, model: any, report_id: dict):
@@ -848,6 +849,59 @@ class Querys:
             if query:
                 query.password = new_passwd
                      
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for get the all the clients
+    def list_clients(self, data):
+        
+        try:
+            response = list()
+            query = session.query(
+                ClientModel.id,
+                ClientModel.name,
+                ClientModel.status,
+            ).order_by(
+                ClientModel.id.desc()
+            )
+
+            if query:
+                
+                reg_cont = query.count()
+
+                clients = query.limit(data["limit"]).offset(data["limit"]*(int(data["position"])-1))
+
+                for key in clients:
+                    response.append({
+                        "id": key.id,
+                        "name": key.name,
+                        "status": key.status,
+                    })
+
+                response = {"clients": response, "reg_cont": reg_cont}
+
+            return response
+
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+
+    # Query for update data client
+    def update_client(self, client_id: int, data_update: dict):
+
+        try:
+            query = session.query(
+                ClientModel
+            ).filter_by(
+                id = client_id
+            ).update(data_update)                     
             session.commit()
                 
         except Exception as ex:

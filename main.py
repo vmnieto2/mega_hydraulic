@@ -6,6 +6,7 @@ from Middleware.get_json import JSONMiddleware
 from Router.User import user_router
 from Router.Params import param_router
 from Router.Report import report_router
+from Router.Client import client_router
 from pathlib import Path
 
 
@@ -28,6 +29,7 @@ app.add_middleware(
 app.include_router(user_router)
 app.include_router(param_router)
 app.include_router(report_router)
+app.include_router(client_router)
 
 BASE.metadata.create_all(bind=engine)
 
