@@ -37,9 +37,13 @@ class Report:
                 "client_line_id": data["client_line_id"],
                 "person_receives": data["person_receives"],
                 "om": data["om"],
+                "solped": data["solped"],
+                "buy_order": data["buy_order"],
+                "position": data["position"],
                 "equipment_type_id": data["equipment_type_id"],
                 "equipment_name": data["equipment_name"],
                 "service_description": data["service_description"],
+                "information": data["information"],
                 "user_id": data["user_id"]
             }
 
@@ -265,9 +269,13 @@ class Report:
                 "client_line_id": data["client_line_id"],
                 "person_receives": data["person_receives"],
                 "om": data["om"],
+                "solped": data["solped"],
+                "buy_order": data["buy_order"],
+                "position": data["position"],
                 "equipment_type_id": data["equipment_type_id"],
                 "equipment_name": data["equipment_name"],
                 "service_description": data["service_description"],
+                "information": data["information"],
                 "user_id": data["user_id"]
             }
 

@@ -11,10 +11,14 @@ class ReportModel(BASE):
     client_id = Column(BigInteger, nullable=False)
     client_line_id = Column(BigInteger, nullable=False)
     person_receives = Column(String, nullable=False)
-    om = Column(String, nullable=False)
+    om = Column(String, nullable=True)
+    solped = Column(String, nullable=True)
+    buy_order = Column(String, nullable=True)
+    position = Column(String, nullable=True)
     equipment_type_id = Column(BigInteger, nullable=False)
     equipment_name = Column(String, nullable=False)
     service_description = Column(Text)
+    information = Column(Text)
     user_id = Column(BigInteger, nullable=False)
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(), default=datetime.now(), nullable=False)
@@ -25,7 +29,11 @@ class ReportModel(BASE):
         self.client_line_id = data['client_line_id']
         self.person_receives = data['person_receives']
         self.om = data['om']
+        self.solped = data['solped']
+        self.buy_order = data['buy_order']
+        self.position = data['position']
         self.equipment_type_id = data['equipment_type_id']
         self.equipment_name = data['equipment_name']
         self.service_description = data['service_description']
+        self.information = data['information']
         self.user_id = data['user_id']

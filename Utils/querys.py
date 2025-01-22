@@ -389,10 +389,14 @@ class Querys:
                 ReportModel.person_receives.label('person_receive_id'),
                 ClientUserModel.full_name.label('person_receive_name'),
                 ReportModel.om,
+                ReportModel.solped,
+                ReportModel.buy_order,
+                ReportModel.position,
                 ReportModel.equipment_type_id,
                 TypeEquipmentModel.name.label('equipment_type_name'),
                 ReportModel.equipment_name,
                 ReportModel.service_description,
+                ReportModel.information,
             ).join(
                 ClientModel, 
                 ClientModel.id == ReportModel.client_id,
@@ -429,6 +433,10 @@ class Querys:
                     "person_receive_id": query.person_receive_id,
                     "person_receive_name": str(query.person_receive_name).upper(),
                     "om": query.om,
+                    "solped": query.solped,
+                    "buy_order": query.buy_order,
+                    "position": query.position,
+                    "information": query.information,
                     "equipment_type_id": query.equipment_type_id,
                     "equipment_type_name": query.equipment_type_name,
                     "equipment_name": str(query.equipment_name).upper(),
@@ -646,9 +654,13 @@ class Querys:
                 query.client_line_id = data["client_line_id"]
                 query.person_receives = data["person_receives"]
                 query.om = data["om"]
+                query.solped = data["solped"]
+                query.buy_order = data["buy_order"]
+                query.position = data["position"]
                 query.equipment_type_id = data["equipment_type_id"]
                 query.equipment_name = data["equipment_name"]
                 query.service_description = data["service_description"]
+                query.information = data["information"]
                 query.user_id = data["user_id"]
                 session.commit()
                 

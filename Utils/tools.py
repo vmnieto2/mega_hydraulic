@@ -17,8 +17,10 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 import textwrap
 from reportlab.lib.utils import ImageReader
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 
 
 
@@ -94,17 +96,19 @@ class Tools:
         pdf.setFont('Helvetica', 10)
 
         # Escribir datos en el PDF
-        pdf.drawString(152, 600, f"{data['activity_date']}")
-        pdf.drawString(152, 582, f"{data['om']}")
-        pdf.drawString(152, 568, f"{data['client_name']}")
-        pdf.drawString(152, 555, f"{data['client_line']}")
-        pdf.drawString(152, 537, f"{data['person_receive_name']}")
-        pdf.drawString(195, 500, f"{data['equipment_name']}")
+        pdf.drawString(187, 630, f"{data['activity_date']}")
+        pdf.drawString(187, 617, f"{data['client_name']}")
+        pdf.drawString(187, 603, f"{data['om']}")
+        pdf.drawString(187, 590, f"{data['solped']}")
+        pdf.drawString(187, 565, f"{data['person_receive_name']}")
+        pdf.drawString(387, 631, f"{data['buy_order']}-{data['position']}")
+        pdf.drawString(195, 537, f"{data['equipment_name']}")
+        pdf.drawString(235, 520, f"{data['service_description']}")
 
         # Function for set the X mark on the report
         self.set_type_service(pdf, data["type_service"])
-        y_position = 485
-        y_position = self.ajust_long_text(pdf, data['service_description'], 195, y_position, 450)
+        y_position = 500
+        y_position = self.ajust_long_text(pdf, data['information'], 45, y_position, 550)
 
         # Ajustar la lista de tareas justo debajo de la descripción
         tasks = data["tasks"]
@@ -157,19 +161,35 @@ class Tools:
         :param y: La posición y en el PDF.
         :param max_width: El ancho máximo en píxeles para una línea de texto.
         """
-        # Configurar el tamaño de fuente
-        can.setFont("Helvetica", 10)
+        # Margen de seguridad para evitar desbordamiento
+        page_margin = 40  
+        max_width = min(max_width, letter[0] - x - page_margin)
 
-        # Dividir el texto en líneas que se ajusten al ancho máximo
-        wrapper = textwrap.TextWrapper(width=max_width // 6)  # Ajusta el divisor según el tamaño de fuente
-        lines = wrapper.wrap(text=text)
+        # Crear un estilo personalizado para la justificación
+        justified_style = ParagraphStyle(
+            name='Justified',
+            fontName='Helvetica',
+            fontSize=10,
+            leading=12,  # Espaciado entre líneas
+            alignment=TA_JUSTIFY,  # 4 = Justificado
+            spaceAfter=6,  # Espaciado después del párrafo
+        )
 
-        # Dibujar cada línea, ajustando la posición 'y' hacia arriba para cada línea
-        for line in lines:
-            can.drawString(x, y, line)
-            y -= 12  # Ajusta el espaciado entre líneas
+        # Crear el párrafo justificado
+        paragraph = Paragraph(text, justified_style)
 
-        return y  # Devuelve la posición y después de pintar el texto
+        # Calcular el tamaño del párrafo
+        text_width, text_height = paragraph.wrapOn(can, max_width, 0)
+
+        # Dibujar un rectángulo alrededor del texto
+        can.setStrokeColor(colors.black)
+        can.setLineWidth(1)
+        can.rect(x - 5, y - text_height, max_width + 10, text_height + 10, stroke=1, fill=0)
+
+        # Dibujar el texto justificado en el canvas
+        paragraph.drawOn(can, x, y - text_height + 5)
+
+        return y - text_height + 15  # Retornar la nueva posición Y
 
     # Función para ajustar la lista de tareas
     def ajust_list(self, can, tasks, x, y):
@@ -285,15 +305,15 @@ class Tools:
         if data:
             for key in data:
                 if key["id"] == 1:
-                    can.drawString(535, 600, "✔")
+                    can.drawString(508, 617, "✔")
                 elif key["id"] == 2:
-                    can.drawString(535, 583, "✔")
+                    can.drawString(508, 603, "✔")
                 elif key["id"] == 3:
-                    can.drawString(535, 568, "✔")
+                    can.drawString(508, 587, "✔")
                 elif key["id"] == 4:
-                    can.drawString(535, 553, "✔")
+                    can.drawString(508, 572, "✔")
                 elif key["id"] == 5:
-                    can.drawString(535, 538, "✔")
+                    can.drawString(508, 558, "✔")
 
     # """ Obtener archivo"""
     # def get_file_b64(self, file_path):
