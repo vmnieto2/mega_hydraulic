@@ -165,6 +165,10 @@ class Tools:
         page_margin = 40  
         max_width = min(max_width, letter[0] - x - page_margin)
 
+        # Dividir el texto en líneas usando el punto "." como separador
+        lines = text.split(".")
+        formatted_text = "<br/>".join(line.strip() + "." for line in lines if line.strip())
+
         # Crear un estilo personalizado para la justificación
         justified_style = ParagraphStyle(
             name='Justified',
@@ -176,7 +180,7 @@ class Tools:
         )
 
         # Crear el párrafo justificado
-        paragraph = Paragraph(text, justified_style)
+        paragraph = Paragraph(formatted_text, justified_style)
 
         # Calcular el tamaño del párrafo
         text_width, text_height = paragraph.wrapOn(can, max_width, 0)
@@ -206,13 +210,17 @@ class Tools:
         # Crear los títulos de la tabla
         table_data = [["Tarea", "SI", "NO", "Descripción"]]
 
+        # Definir un estilo para ajustar el texto
+        style = ParagraphStyle(name='TableParagraph', fontSize=10, leading=12)
+
         # Añadir los datos de las tareas
         for task in tasks:
+            description_paragraph = Paragraph(task["description"], style)
             row = [
                 task["name"],
                 "✔" if task["positive"] == 1 else "",
                 "✔" if task["negative"] == 1 else "",
-                task["description"]
+                description_paragraph
             ]
             table_data.append(row)
 
@@ -230,6 +238,8 @@ class Tools:
             ('BOTTOMPADDING', (0, 0), (-1, 0), 6),  # Espaciado inferior en el encabezado
             ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),  # Fondo blanco para las filas
             ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Líneas de la tabla
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Alinear el texto superiormente
+            ('WORDWRAP', (3, 1), (3, -1), 'CJK'),  # Ajuste automático de texto en la columna descripción
         ])
         table.setStyle(style)
 
@@ -239,7 +249,7 @@ class Tools:
         # Dibujar la tabla en la posición especificada
         table.drawOn(can, x, y - table_height)
 
-        return y  # Devuelve la nueva coordenada y después de la lista
+        return y - table_height  # Devuelve la nueva coordenada y después de la lista
 
     # Función para ajustar las imagenes
     def ajust_images(self, can, image_files, x, y, max_height, page_height):
