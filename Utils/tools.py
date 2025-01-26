@@ -118,6 +118,9 @@ class Tools:
         # Agregar las imágenes justo debajo de la lista de mantenimiento
         image_paths = data["files"]
         if image_paths:
+            if y_position < 200:  
+                pdf.showPage()  # Nueva página para imágenes si hay poco espacio
+                y_position = letter[1] - 50  # Reiniciar coordenada en la nueva página
             max_height = 170  # Altura mínima para imágenes
             y_position = self.ajust_images(pdf, image_paths, x=100, y=0, max_height=max_height, page_height=letter[1])
 
@@ -185,6 +188,11 @@ class Tools:
         # Calcular el tamaño del párrafo
         text_width, text_height = paragraph.wrapOn(can, max_width, 0)
 
+        # Verificar si el texto cabe en la página actual
+        if y - text_height < 50:  # Si no cabe en la página, mover a la siguiente
+            can.showPage()
+            y = letter[1] - 50  # Reiniciar la posición en la nueva página
+
         # Dibujar un rectángulo alrededor del texto
         can.setStrokeColor(colors.black)
         can.setLineWidth(1)
@@ -245,6 +253,11 @@ class Tools:
 
         # Determinar el tamaño de la tabla
         table_width, table_height = table.wrapOn(can, x, y)
+
+        # Verificar si la tabla cabe en la página actual
+        if y - table_height < 50:  # Si no cabe, pasar a la siguiente página
+            can.showPage()
+            y = letter[1] - 50  # Reiniciar posición en nueva página
 
         # Dibujar la tabla en la posición especificada
         table.drawOn(can, x, y - table_height)

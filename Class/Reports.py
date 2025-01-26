@@ -1,5 +1,6 @@
 from Utils.tools import Tools, CustomException
 from Utils.querys import Querys
+from Utils.filters import Filters
 from Models.report_model import ReportModel
 from Models.report_details_model import ReportDetailsModel
 from Models.client_model import ClientModel
@@ -26,6 +27,7 @@ class Report:
     def __init__(self):
         self.tools = Tools()
         self.querys = Querys()
+        self.filter_class = Filters()
 
     # Funcion for create a report
     def create_report(self, data):
@@ -210,18 +212,30 @@ class Report:
         limit = int(data["limit"])
         page_position = int(data["position"])
         state = data["state"]
+        filters = data["filters"]
         user_id = int(data["user_id"])
         reports_dict = list()
+        data_filter = list()
+        response = list()
+
+        filters = self.validate_filters(filters)
+        if filters:
+            data_filter = self.filter_class.get_filters(filters)
 
         if page_position <= 0:
             message = "El campo posición no es válido"
             raise CustomException(message)
         
         if state:
-            reports = self.querys.list_reports(data)
+            reports = self.querys.list_reports(data, data_filter=data_filter)
 
         if not state:
-            reports = self.querys.list_reports(data, user_id, state)
+            reports = self.querys.list_reports(
+                data, 
+                user_id, 
+                state , 
+                data_filter=data_filter
+            )
 
         data_report = reports["reports"]
         reg_cont = reports["reg_cont"]
@@ -234,6 +248,23 @@ class Report:
             "posicion_pag": 0,
             "reportes": []
         })
+
+        for key in data_report:
+            first_name = str(key.first_name).upper()
+            last_name = str(key.last_name).upper()
+            response.append({
+                "id": key.id,
+                "activity_date": key.activity_date,
+                "client_name": key.client_name,
+                "client_line": key.client_line,
+                "person_receive_name": str(key.person_receive_name).upper(),
+                "om": key.om,
+                "solped": key.solped,
+                "buy_order": key.buy_order,
+                "type_equipment_name": key.type_equipment_name,
+                "equipment_name": str(key.equipment_name).capitalize(),
+                "user_name": f"{first_name} {last_name}"
+            })
 
         if reg_cont%limit == 0:
             total_pag = reg_cont//limit
@@ -253,7 +284,7 @@ class Report:
             "total_registros": reg_cont,
             "total_pag": total_pag,
             "posicion_pag": page_position,
-            "reportes": data_report
+            "reportes": response
         }
 
         return self.tools.output(200, message, reports_dict)
@@ -371,3 +402,9 @@ class Report:
 
         except Exception as ex:
             raise CustomException(str(ex))
+
+    # Function for verify if the values are empty
+    def validate_filters(self, filters):
+        if all(value == "" for value in filters.values()):
+            return None
+        return filters

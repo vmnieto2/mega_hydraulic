@@ -17,6 +17,7 @@ from Models.report_details_model import ReportDetailsModel
 from Models.report_files_model import ReportFilesModel
 from Models.module_model import ModulesModel
 from Models.permission_model import PermissionModel
+from sqlalchemy import func, and_
 
 class Querys:
 
@@ -529,7 +530,7 @@ class Querys:
         return response
 
     # Query for get the reports according to case
-    def list_reports(self, data, user_id = None, state: bool = True):
+    def list_reports(self, data, user_id = None, state: bool = True, data_filter: list = []):
         
         try:
             response = list()
@@ -540,6 +541,8 @@ class Querys:
                 ClientLinesModel.name.label('client_line'),
                 ClientUserModel.full_name.label('person_receive_name'),
                 ReportModel.om,
+                ReportModel.solped,
+                ReportModel.buy_order,
                 TypeEquipmentModel.name.label('type_equipment_name'),
                 ReportModel.equipment_name,
                 UserModel.first_name,
@@ -572,40 +575,23 @@ class Querys:
                 UserModel.status == 1,
                 ReportModel.status == 1
             )
-            if state:
-                query = query.order_by(
-                    ReportModel.id.desc()
-                )
 
             if not state:
                 query = query.filter(
                     ReportModel.user_id == user_id
-                ).order_by(
-                    ReportModel.id.desc()
                 )
 
             if query:
-                
+                if data_filter: query = query.filter(and_(*data_filter))
+                query = query.order_by(
+                    ReportModel.id.desc()
+                )
+            
                 reg_cont = query.count()
 
                 reports = query.limit(data["limit"]).offset(data["limit"]*(int(data["position"])-1))
 
-                for key in reports:
-                    first_name = str(key.first_name).upper()
-                    last_name = str(key.last_name).upper()
-                    response.append({
-                        "id": key.id,
-                        "activity_date": key.activity_date,
-                        "client_name": key.client_name,
-                        "client_line": key.client_line,
-                        "person_receive_name": str(key.person_receive_name).upper(),
-                        "om": key.om,
-                        "type_equipment_name": key.type_equipment_name,
-                        "equipment_name": str(key.equipment_name).capitalize(),
-                        "user_name": f"{first_name} {last_name}"
-                    })
-
-                response = {"reports": response, "reg_cont": reg_cont}
+                response = {"reports": reports, "reg_cont": reg_cont}
 
             return response
 
