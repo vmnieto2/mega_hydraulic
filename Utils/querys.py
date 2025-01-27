@@ -609,11 +609,11 @@ class Querys:
             ).filter(
                 ReportFilesModel.report_id == report_id,
                 ReportFilesModel.path == img["img"],
-                ReportFilesModel.status == 1
             ).first()
 
             if query:
                 query.description = img["description"]
+                query.status = 1
                 session.commit()
                 
         except Exception as ex:

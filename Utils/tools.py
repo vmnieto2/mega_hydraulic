@@ -21,6 +21,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY
+from PIL import Image
 
 
 
@@ -118,9 +119,6 @@ class Tools:
         # Agregar las imágenes justo debajo de la lista de mantenimiento
         image_paths = data["files"]
         if image_paths:
-            if y_position < 200:  
-                pdf.showPage()  # Nueva página para imágenes si hay poco espacio
-                y_position = letter[1] - 50  # Reiniciar coordenada en la nueva página
             max_height = 170  # Altura mínima para imágenes
             y_position = self.ajust_images(pdf, image_paths, x=100, y=0, max_height=max_height, page_height=letter[1])
 
@@ -288,9 +286,17 @@ class Tools:
                 img_description = ""
 
             try:
-                # Obtener dimensiones de la imagen
-                img_width = 300  # Ancho fijo de imagen
-                img_height = max_height
+
+                # Obtener dimensiones reales de la imagen
+                with Image.open(image_path) as img:
+                    orig_width, orig_height = img.size
+
+                # Calcular la escala para mantener la proporción
+                scale_factor = min(300 / orig_width, max_height / orig_height)
+
+                # Calcular el nuevo tamaño proporcional
+                img_width = orig_width * scale_factor
+                img_height = orig_height * scale_factor
 
                 # Calcular posición x centrada
                 centered_x = (page_width - img_width) / 2

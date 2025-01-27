@@ -394,6 +394,7 @@ class Report:
 
             imagenes = data["files"]
             if imagenes:
+                self.querys.deactive_data(ReportFilesModel, data["report_id"])
                 self.proccess_images(data["report_id"], imagenes)
             else:
                 self.querys.deactive_data(ReportFilesModel, data["report_id"])
