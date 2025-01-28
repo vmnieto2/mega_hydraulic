@@ -1,13 +1,17 @@
+from Models.logs_model import LogsModel
 from .tools import CustomException, Tools
 from .rules import Rules
+from .querys import Querys
 from functools import wraps
 from fastapi import Request
 from sqlalchemy import exc
 import traceback
 import json
 from urllib.parse import urlparse
+from fastapi.responses import StreamingResponse
 
 tool = Tools()
+querys = Querys()
 
 
 def http_decorator(func):
@@ -15,6 +19,7 @@ def http_decorator(func):
     def decorador(*args, **kwargs):
         # Verificar si el método es POST o PUT
         request: Request = kwargs.get("request")
+        data_log = dict()
         if request.method in ['POST', 'PUT']:
             codigo = 200
             data = {}
@@ -84,5 +89,24 @@ def http_decorator(func):
                 finally:
                     if codigo != 200:
                         resultado = tool.output(codigo, message, data)
+
+                    if isinstance(resultado, StreamingResponse):
+                        if "/reports/generate_report" in request.url.path:
+                            if "flag" in body and body["flag"]:
+                                contenido = "IMPRIMIENDO PDF"
+                    else:
+                        # Acceder al contenido del JSONResponse
+                        contenido_serializado = resultado.body  # Esto está en formato bytes
+                        contenido = json.loads(contenido_serializado.decode("utf-8"))  # Convertirlo a dict
+
+                    data_log = {
+                        "service": request.url.path,
+                        "method": request.method,
+                        "request": str(body),
+                        "response": str(contenido),
+                        "ip": request.client.host,
+                    }
+                    querys.insert_data(LogsModel, data_log)
+ 
             return resultado
     return decorador
