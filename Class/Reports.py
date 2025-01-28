@@ -17,8 +17,10 @@ import os
 import base64
 import uuid
 import re
+import io
 from fastapi.responses import StreamingResponse
 from io import BytesIO
+from PIL import Image
 
 UPLOAD_FOLDER = "Uploads/"
 
@@ -146,6 +148,24 @@ class Report:
 
                 # Decodificar la imagen base64
                 file_data = base64.b64decode(base64_data)
+
+                # Open the image with Pillow
+                image = Image.open(io.BytesIO(file_data))
+
+                # Compress the image (resize or adjust quality)
+                compressed_image_io = io.BytesIO()
+                image = image.convert("RGB")  # Ensure the image is in RGB format (no alpha channel)
+                
+                # Save with compression
+                image.save(
+                    compressed_image_io,
+                    format="JPEG",  # Convert to JPEG for better compression
+                    optimize=True,
+                    quality=75  # Adjust the quality (lower = more compression)
+                )
+                compressed_image_io.seek(0)
+                compressed_data = compressed_image_io.read()
+
             except Exception as e:
                 raise CustomException(f"Error al decodificar la imagen {index + 1}: {str(e)}")
 
@@ -156,7 +176,7 @@ class Report:
             # Guardar la imagen decodificada en el servidor
             try:
                 with open(file_path, "wb") as file:
-                    file.write(file_data)
+                    file.write(compressed_data)
             except Exception as e:
                 raise CustomException(f"Error al guardar la imagen {index + 1}: {str(e)}")
 
