@@ -279,6 +279,10 @@ class Tools:
         page_width, _ = letter  # Obtener el ancho de la página estándar 'letter'
         y = page_height - 50  # Reiniciar la posición 'y' en la nueva página
 
+        # Configurar estilo para el texto
+        styles = getSampleStyleSheet()
+        text_style = styles["BodyText"]  # Usar un estilo estándar
+
         for image in image_files:
             image_path = image["path"]
             img_description = image["description"]
@@ -311,11 +315,15 @@ class Tools:
                 # Dibujar la imagen centrada
                 can.drawImage(image_path, centered_x, y - img_height, width=img_width, height=img_height)
 
-                # Colocar descripción centrada debajo de la imagen
-                can.drawString(centered_x, y - img_height - 15, f"{img_description}")
+                # Crear un objeto Paragraph para manejar los saltos de línea
+                paragraph = Paragraph(img_description, text_style)
+                _, paragraph_height = paragraph.wrap(img_width, 100)  # Ajustar ancho
+
+                # Dibujar la descripción centrada debajo de la imagen
+                paragraph.drawOn(can, centered_x, y - img_height - paragraph_height - 5)
 
                 # Actualizar la posición 'y'
-                y -= img_height + 40  # Espaciado entre imágenes
+                y -= img_height + 100  # Espaciado entre imágenes
 
                 # Verificar si necesitamos una nueva página
                 if y - img_height < 50:  # Si no hay espacio suficiente
