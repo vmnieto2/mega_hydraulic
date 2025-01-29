@@ -114,10 +114,16 @@ class Rules:
                 "obligatorio": True,
             },
             {
+                "tipo": "string",
+                "campo": "información",
+                "valor": params["information"],
+                "obligatorio": True,
+            },
+            {
                 "tipo": "list",
                 "campo": "lista de tareas",
                 "valor": params["task_list"],
-                "obligatorio": True,
+                "obligatorio": False,
             },
             {
                 "tipo": "list",
@@ -336,10 +342,16 @@ class Rules:
                 "obligatorio": True,
             },
             {
+                "tipo": "string",
+                "campo": "información",
+                "valor": params["information"],
+                "obligatorio": True,
+            },
+            {
                 "tipo": "list",
                 "campo": "lista de tareas",
                 "valor": params["task_list"],
-                "obligatorio": True,
+                "obligatorio": False,
             },
             {
                 "tipo": "list",
