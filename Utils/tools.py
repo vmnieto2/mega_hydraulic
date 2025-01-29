@@ -97,24 +97,43 @@ class Tools:
         pdf.setFont('Helvetica', 10)
 
         # Escribir datos en el PDF
-        pdf.drawString(187, 630, f"{data['activity_date']}")
-        pdf.drawString(187, 617, f"{data['client_name']}")
-        pdf.drawString(187, 603, f"{data['om']}")
-        pdf.drawString(187, 590, f"{data['solped']}")
-        pdf.drawString(187, 565, f"{data['person_receive_name']}")
-        pdf.drawString(387, 631, f"{data['buy_order']}-{data['position']}")
-        pdf.drawString(195, 537, f"{data['equipment_name']}")
-        pdf.drawString(235, 520, f"{data['service_description']}")
+        pdf.drawString(140, 643, f"{data['activity_date']}")
+        pdf.drawString(140, 630, f"{data['client_name']}")
+        pdf.drawString(140, 617, f"{data['om']}")
+        pdf.drawString(140, 603, f"{data['solped']}")
+        pdf.drawString(140, 580, f"{data['person_receive_name']}")
+        pdf.drawString(370, 642, f"{data['buy_order']}-{data['position']}")
+        pdf.drawString(145, 545, f"{data['equipment_name']}")
 
         # Function for set the X mark on the report
         self.set_type_service(pdf, data["type_service"])
-        y_position = 500
-        y_position = self.ajust_long_text(pdf, data['information'], 45, y_position, 550)
+
+        # Ajustamos descripción dinamicamente
+        y_position = 527
+        y_position = self.ajust_long_text(
+            pdf,
+            "DESCRIPCIÓN DE LA ACTIVIDAD: ",
+            data['service_description'], 
+            32, 
+            y_position, 
+            510
+        )
+
+        # Ajustamos informatión dinamicamente
+        y_position -= 30
+        y_position = self.ajust_long_text(
+            pdf,
+            "",
+            data['information'], 
+            32, 
+            y_position, 
+            510
+        )
 
         # Ajustar la lista de tareas justo debajo de la descripción
         tasks = data["tasks"]
         if tasks:
-            y_position = self.ajust_list(pdf, tasks, x=40, y=y_position - 20)  # Ajusta el espaciado
+            y_position = self.ajust_list(pdf, tasks, x=28, y=y_position - 20)  # Ajusta el espaciado
 
         # Agregar las imágenes justo debajo de la lista de mantenimiento
         image_paths = data["files"]
@@ -153,7 +172,7 @@ class Tools:
         return output_buffer.read()
     
     # Función para ajustar textos largos
-    def ajust_long_text(self, can, text, x, y, max_width):
+    def ajust_long_text(self, can, title, text, x, y, max_width):
         """
         Función que ajusta el texto a varias líneas si es demasiado largo.
         :param can: El objeto canvas de ReportLab.
@@ -174,14 +193,14 @@ class Tools:
         justified_style = ParagraphStyle(
             name='Justified',
             fontName='Helvetica',
-            fontSize=10,
+            fontSize=11,
             leading=12,  # Espaciado entre líneas
             alignment=TA_JUSTIFY,  # 4 = Justificado
             spaceAfter=6,  # Espaciado después del párrafo
         )
 
         # Crear el párrafo justificado
-        paragraph = Paragraph(formatted_text, justified_style)
+        paragraph = Paragraph(f"<b>{title}</b>{formatted_text}", justified_style)
 
         # Calcular el tamaño del párrafo
         text_width, text_height = paragraph.wrapOn(can, max_width, 0)
@@ -231,7 +250,7 @@ class Tools:
             table_data.append(row)
 
         # Crear la tabla
-        table = Table(table_data, colWidths=[230, 30, 30, 250])  # Ajusta los anchos de las columnas
+        table = Table(table_data, colWidths=[230, 30, 30, 230])  # Ajusta los anchos de las columnas
 
         # Estilo de la tabla
         style = TableStyle([
@@ -296,7 +315,7 @@ class Tools:
                     orig_width, orig_height = img.size
 
                 # Calcular la escala para mantener la proporción
-                scale_factor = min(300 / orig_width, max_height / orig_height)
+                scale_factor = min(300 / orig_width, max_height / orig_height) * 1.5
 
                 # Calcular el nuevo tamaño proporcional
                 img_width = orig_width * scale_factor
@@ -342,15 +361,15 @@ class Tools:
         if data:
             for key in data:
                 if key["id"] == 1:
-                    can.drawString(508, 617, "✔")
+                    can.drawString(532, 630, "✔")
                 elif key["id"] == 2:
-                    can.drawString(508, 603, "✔")
+                    can.drawString(532, 615, "✔")
                 elif key["id"] == 3:
-                    can.drawString(508, 587, "✔")
+                    can.drawString(532, 600, "✔")
                 elif key["id"] == 4:
-                    can.drawString(508, 572, "✔")
+                    can.drawString(532, 585, "✔")
                 elif key["id"] == 5:
-                    can.drawString(508, 558, "✔")
+                    can.drawString(532, 572, "✔")
 
     # """ Obtener archivo"""
     # def get_file_b64(self, file_path):
