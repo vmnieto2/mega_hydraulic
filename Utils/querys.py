@@ -185,6 +185,8 @@ class Querys:
             TypeEquipmentModel
         ).filter(
             TypeEquipmentModel.status == 1
+        ).order_by(
+            TypeEquipmentModel.order.asc()
         ).all()
         session.close()
         
@@ -980,6 +982,24 @@ class Querys:
             ).filter_by(
                 id = param_id, client_id = client_id
             ).update(data_update)                     
+            session.commit()
+                
+        except Exception as ex:
+            raise CustomException(str(ex))
+        finally:
+            session.close()
+        
+        return True
+
+    # Query for change status of the report
+    def change_status_report(self, report_id: int):
+
+        try:
+            session.query(
+                ReportModel
+            ).filter_by(
+                id = report_id
+            ).update({"status": 0})                     
             session.commit()
                 
         except Exception as ex:

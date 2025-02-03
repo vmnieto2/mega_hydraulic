@@ -429,3 +429,12 @@ class Report:
         if all(value == "" for value in filters.values()):
             return None
         return filters
+
+    # Function for change status of report
+    def change_status_report(self, data: dict):
+        
+        report_id = int(data["report_id"])
+
+        self.querys.change_status_report(report_id)
+
+        return self.tools.output(200, "Reporte eliminado con exito.")
