@@ -31,11 +31,13 @@ class User:
         enc_passwd = data_user["password"]
         if not check_password_hash(enc_passwd, password):
             raise CustomException("Username or password incorrect.")
-        
-        # if data_user["user_type_id"] != 1:
-        #     raise CustomException("User not authorized.", 401)
 
-        token = create_token(data)
+        token = create_token(
+            {
+                "document": document, 
+                "user_type_id": data_user["user_type_id"]
+            }
+        )
         data_user["token"] = token
         data_user.pop("password")
         return self.tools.output(200, "Login successfully.", data_user)
