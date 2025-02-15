@@ -545,6 +545,7 @@ class Querys:
                 ReportModel.om,
                 ReportModel.solped,
                 ReportModel.buy_order,
+                ReportModel.position,
                 TypeEquipmentModel.name.label('type_equipment_name'),
                 ReportModel.equipment_name,
                 UserModel.first_name,
@@ -649,7 +650,6 @@ class Querys:
                 query.equipment_name = data["equipment_name"]
                 query.service_description = data["service_description"]
                 query.information = data["information"]
-                query.user_id = data["user_id"]
                 session.commit()
                 
         except Exception as ex:

@@ -281,6 +281,7 @@ class Report:
                 "om": key.om,
                 "solped": key.solped,
                 "buy_order": key.buy_order,
+                "position": key.position,
                 "type_equipment_name": key.type_equipment_name,
                 "equipment_name": str(key.equipment_name).capitalize(),
                 "user_name": f"{first_name} {last_name}"
